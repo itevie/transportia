@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class ImageCard extends StatelessWidget {
   final String title;
   final String url;
+  final List<Widget>? badges;
   final VoidCallback? onTap;
 
   const ImageCard({
@@ -10,6 +11,7 @@ class ImageCard extends StatelessWidget {
     required this.title,
     required this.url,
     this.onTap,
+    this.badges,
   });
 
   @override
@@ -47,11 +49,21 @@ class ImageCard extends StatelessWidget {
                     colors: [Colors.transparent, Colors.black87],
                   ),
                 ),
-                child: Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    if (badges != null) ...badges!,
+                  ],
                 ),
               ),
             ),

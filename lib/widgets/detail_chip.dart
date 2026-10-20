@@ -3,15 +3,21 @@ import 'package:flutter/material.dart';
 class DetailChip extends StatelessWidget {
   final Widget contents;
   final IconData icon;
+  final VoidCallback? onClick;
 
-  const DetailChip({super.key, required this.contents, required this.icon});
+  const DetailChip({
+    super.key,
+    required this.contents,
+    required this.icon,
+    this.onClick,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {},
+        onPressed: onClick ?? () {},
         icon: Icon(icon),
         label: contents,
         style:

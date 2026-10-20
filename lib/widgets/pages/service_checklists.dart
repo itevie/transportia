@@ -1,5 +1,7 @@
+import 'package:dawn_ui_flutter/prompts/prompts.dart';
 import 'package:flutter/material.dart';
-import 'package:transportia/main.dart';
+import 'package:transportia/api/route_checklist.dart';
+import 'package:transportia/main_old.dart';
 import 'package:transportia/widgets/pages/service_checklist.dart';
 
 class ServiceChecklists extends StatefulWidget {
@@ -10,6 +12,33 @@ class ServiceChecklists extends StatefulWidget {
 }
 
 class _ServiceChecklistsState extends State<ServiceChecklists> {
+  List<ApiRouteChecklist> checklists = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    load();
+  }
+
+  void load() async {
+    final fetched = await ApiRouteChecklist.fetchAll();
+
+    setState(() {
+      checklists = fetched;
+    });
+  }
+
+  void create() async {
+    final title = await showInputPrompt(context, Text("Checklist Title"), null);
+
+    if (title == null) return;
+
+    await ApiRouteChecklist.create(title, null);
+
+    load();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox.expand(
@@ -24,22 +53,21 @@ class _ServiceChecklistsState extends State<ServiceChecklists> {
                 ),
                 const SizedBox(height: 8),
 
-                Card(
-                  child: ListTile(
-                    onTap: () => setAppPage(ServiceChecklist()),
-                    title: const Text("Bee Network"),
-                    subtitle: const Text("22/289 routes completed"),
-                    trailing: const Icon(Icons.chevron_right),
-                  ),
-                ),
-                Card(
-                  child: ListTile(
-                    onTap: () => setAppPage(ServiceChecklist()),
-                    title: const Text("London"),
-                    subtitle: const Text("38/857 routes completed"),
-                    trailing: const Icon(Icons.chevron_right),
-                  ),
-                ),
+                ...checklists.map((x) {
+                  final count = x.items.length;
+                  final completed = x.items
+                      .where((x) => x.completedAt != null)
+                      .length;
+
+                  return Card(
+                    child: ListTile(
+                      onTap: () => setAppPage(ServiceChecklist(checklist: x)),
+                      title: Text(x.title),
+                      subtitle: Text("$completed/$count"),
+                      trailing: const Icon(Icons.chevron_right),
+                    ),
+                  );
+                }),
               ],
             ),
           ),
@@ -48,7 +76,7 @@ class _ServiceChecklistsState extends State<ServiceChecklists> {
             right: 16,
             bottom: 16,
             child: FloatingActionButton(
-              onPressed: () {},
+              onPressed: create,
               child: const Icon(Icons.add),
             ),
           ),
