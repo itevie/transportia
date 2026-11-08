@@ -1,9 +1,8 @@
 import 'package:dawn_ui_flutter/prompts/prompts.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:transportia/api/user.dart';
-import 'package:transportia/main_old.dart';
-import 'package:transportia/util_widgets/center_page_container.dart';
-import 'package:transportia/widgets/pages/login.dart';
+import 'package:transportia/widgets/util/center_page_container.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -93,7 +92,8 @@ class _RegisterPageState extends State<RegisterPage> {
         Text("Your account has been created, you must now login."),
       );
 
-      setAppPage(LoginPage());
+      context.push("/login");
+      // setAppPage(LoginPage());
     } else {
       // ignore: use_build_context_synchronously
       showErrorPrompt(context, result.$2);

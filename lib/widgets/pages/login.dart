@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:transportia/api/user.dart';
-import 'package:transportia/main_old.dart';
 import 'package:transportia/prompts/error.dart';
 import 'package:transportia/util/prefs.dart';
-import 'package:transportia/util_widgets/center_page_container.dart';
+import 'package:transportia/widgets/util/center_page_container.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -33,7 +33,9 @@ class _LoginPageState extends State<LoginPage> {
 
     if (result.$1) {
       await Preferences().setString("token", result.$2);
-      reload();
+      context.push("/");
+      // TODO: Fix reload
+      // reload();
     } else {
       showErrorPrompt(context, result.$2);
     }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:transportia/api/bt_vehicle.dart';
 
-import 'package:transportia/util_widgets/sub_text.dart';
-import 'package:transportia/widgets/vehicle_card.dart';
+import 'package:transportia/widgets/util/sub_text.dart';
+import 'package:transportia/widgets/object/vehicle_card.dart';
 
 class VehicleList extends StatelessWidget {
   final List<ApiBtVehicle> vehicles;

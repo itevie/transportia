@@ -14,6 +14,8 @@ class ApiUser {
 
   final String passwordHash;
 
+  final bool trustedUser;
+
   ApiUser({
     required this.id,
     required this.email,
@@ -21,6 +23,7 @@ class ApiUser {
     this.displayName,
     this.bio,
     required this.passwordHash,
+    required this.trustedUser,
   });
 
   factory ApiUser.fromJson(Map<String, dynamic> json) {
@@ -31,6 +34,7 @@ class ApiUser {
       displayName: json["display_name"],
       bio: json["bio"],
       passwordHash: json["password_hash"],
+      trustedUser: json["trusted_user"],
     );
   }
 
@@ -80,5 +84,15 @@ class ApiUser {
     );
 
     return (data as List).map((json) => ApiUser.fromJson(json)).toList();
+  }
+
+  static Future<ApiUser?> get(int id) async {
+    final data = await Api().get("/users/$id");
+
+    if (data == null) {
+      return null;
+    }
+
+    return ApiUser.fromJson(data);
   }
 }

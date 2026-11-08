@@ -46,4 +46,14 @@ class ApiBtVehicleType {
         .map((json) => ApiBtVehicleType.fromJson(json))
         .toList();
   }
+
+  static Future<ApiBtVehicleType?> get(int id) async {
+    final data = await Api().get("/vehicle-types/$id");
+
+    if (data == null) {
+      return null;
+    }
+
+    return ApiBtVehicleType.fromJson(data);
+  }
 }

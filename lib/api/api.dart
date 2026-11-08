@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
+import 'package:transportia/main.dart';
 import 'package:transportia/util/prefs.dart';
 
 class Api {
@@ -13,7 +15,7 @@ class Api {
 
   String baseUrl = "http://localhost:3000";
 
-  Map<String, String> _headers({bool json = false}) {
+  Map<String, String> headers({bool json = false}) {
     final token = Preferences().getString("token");
 
     return {
@@ -25,16 +27,16 @@ class Api {
   Future<dynamic> get(String path) async {
     final response = await http.get(
       Uri.parse("$baseUrl$path"),
-      headers: _headers(),
+      headers: headers(),
     );
 
     return _handleResponse(response);
   }
 
-  Future<dynamic> post(String path, Map<String, dynamic> body) async {
+  Future<dynamic> post(String path, dynamic body) async {
     final response = await http.post(
       Uri.parse("$baseUrl$path"),
-      headers: _headers(json: true),
+      headers: headers(json: true),
       body: jsonEncode(body),
     );
 
@@ -44,7 +46,7 @@ class Api {
   Future<dynamic> put(String path, Map<String, dynamic> body) async {
     final response = await http.put(
       Uri.parse("$baseUrl$path"),
-      headers: _headers(json: true),
+      headers: headers(json: true),
       body: jsonEncode(body),
     );
 
@@ -54,7 +56,7 @@ class Api {
   Future<dynamic> patch(String path, Map<String, dynamic> body) async {
     final response = await http.patch(
       Uri.parse("$baseUrl$path"),
-      headers: _headers(json: true),
+      headers: headers(json: true),
       body: jsonEncode(body),
     );
 
@@ -64,7 +66,7 @@ class Api {
   Future<dynamic> delete(String path) async {
     final response = await http.delete(
       Uri.parse("$baseUrl$path"),
-      headers: _headers(),
+      headers: headers(),
     );
 
     return _handleResponse(response);
@@ -72,7 +74,10 @@ class Api {
 
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception("HTTP ${response.statusCode}: ${response.body}");
+      showError(response.body);
+      throw Exception(
+        "HTTP ${response.request?.url.toString()} ${response.statusCode}: ${response.body}",
+      );
     }
 
     if (response.body.isEmpty) {

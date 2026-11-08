@@ -3,6 +3,7 @@ import 'package:transportia/api/bt_livery.dart';
 import 'package:transportia/api/bt_vehicle_type.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tx_operator.dart';
+import 'package:transportia/constants.dart';
 
 class ApiBtVehicle {
   final int id;
@@ -22,7 +23,11 @@ class ApiBtVehicle {
   final String notes;
   final bool withdrawn;
   final ApiPhoto? photo;
+  final int? commentThread;
   final bool? isFavourited;
+  final bool trainingVehicle;
+  final bool demonstrator;
+  final bool openTop;
 
   ApiBtVehicle({
     required this.id,
@@ -43,6 +48,10 @@ class ApiBtVehicle {
     required this.withdrawn,
     this.photo,
     this.isFavourited,
+    this.commentThread,
+    required this.trainingVehicle,
+    required this.demonstrator,
+    required this.openTop,
   });
 
   factory ApiBtVehicle.fromJson(Map<String, dynamic> json) {
@@ -71,6 +80,60 @@ class ApiBtVehicle {
       withdrawn: json["withdrawn"],
       photo: json["photo"] == null ? null : ApiPhoto.fromJson(json["photo"]),
       isFavourited: json["is_favourited"],
+      commentThread: json["comment_thread"],
+      trainingVehicle: json["training_vehicle"],
+      demonstrator: json["demonstrator"],
+      openTop: json["open_top"],
+    );
+  }
+
+  ApiBtVehicle copyWith({
+    int? id,
+    String? slug,
+    String? fleet,
+    String? reg,
+    String? previousReg,
+    int? vehicleTypeId,
+    ApiBtVehicleType? vehicleType,
+    int? liveryId,
+    ApiBtLivery? livery,
+    String? branding,
+    String? operatorId,
+    ApiTxOperator? operator,
+    String? garageId,
+    String? name,
+    String? notes,
+    bool? withdrawn,
+    ApiPhoto? photo,
+    int? commentThread,
+    bool? isFavourited,
+    bool? trainingVehicle,
+    bool? demonstrator,
+    bool? openTop,
+  }) {
+    return ApiBtVehicle(
+      id: id ?? this.id,
+      slug: slug ?? this.slug,
+      fleet: fleet ?? this.fleet,
+      reg: reg ?? this.reg,
+      previousReg: previousReg ?? this.previousReg,
+      vehicleTypeId: vehicleTypeId ?? this.vehicleTypeId,
+      vehicleType: vehicleType ?? this.vehicleType,
+      liveryId: liveryId ?? this.liveryId,
+      livery: livery ?? this.livery,
+      branding: branding ?? this.branding,
+      operatorId: operatorId ?? this.operatorId,
+      operator: operator ?? this.operator,
+      garageId: garageId ?? this.garageId,
+      name: name ?? this.name,
+      notes: notes ?? this.notes,
+      withdrawn: withdrawn ?? this.withdrawn,
+      photo: photo ?? this.photo,
+      commentThread: commentThread ?? this.commentThread,
+      isFavourited: isFavourited ?? this.isFavourited,
+      trainingVehicle: trainingVehicle ?? this.trainingVehicle,
+      demonstrator: demonstrator ?? this.demonstrator,
+      openTop: openTop ?? this.openTop,
     );
   }
 
@@ -88,8 +151,11 @@ class ApiBtVehicle {
     bool? electric,
     bool? doubleDecker,
     bool? coach,
+    bool? trainingVehicle,
+    bool? demonstrator,
+    bool? openTop,
     bool? hasImage,
-    int? pageLength = 50,
+    int? pageLength = pageSize,
     int? offset,
   }) async {
     String query = "";
@@ -107,6 +173,9 @@ class ApiBtVehicle {
       ("operator_id", operatorId),
       ("electric", electric),
       ("double_decker", doubleDecker),
+      ("open_top", openTop),
+      ("demonstrator", demonstrator),
+      ("training_vehicle", trainingVehicle),
       ("coach", coach),
       ("has_image", hasImage),
       ("page_length", pageLength),
@@ -131,5 +200,17 @@ class ApiBtVehicle {
     }
 
     return ApiBtVehicle.fromJson(data);
+  }
+
+  Future<void> updateVehicle({
+    bool? trainingVehicle,
+    bool? demonstrator,
+    bool? openTop,
+  }) async {
+    await Api().patch("/vehicles/$id", {
+      "training_vehicle": ?trainingVehicle,
+      'demonstrator': ?demonstrator,
+      'open_top': ?openTop,
+    });
   }
 }

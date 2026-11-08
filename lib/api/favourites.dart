@@ -7,6 +7,7 @@ class ApiFavourite {
   final FavouriteType targetType;
   final String createdAt;
   final dynamic object;
+  final int? group;
 
   ApiFavourite({
     required this.id,
@@ -15,6 +16,7 @@ class ApiFavourite {
     required this.targetType,
     required this.createdAt,
     required this.object,
+    required this.group,
   });
 
   factory ApiFavourite.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class ApiFavourite {
       targetType: FavouriteType.fromJson(json["target_type"]),
       createdAt: json["created_at"],
       object: json["object"],
+      group: json["group"],
     );
   }
 
@@ -39,16 +42,29 @@ class ApiFavourite {
     return (data as List).map((json) => ApiFavourite.fromJson(json)).toList();
   }
 
+  static Future<List<ApiFavourite>> getByGroup(
+    int group, {
+    bool fillOut = false,
+  }) async {
+    final data = await Api().get("/favourites/groups/$group?fill_out=$fillOut");
+
+    return (data as List).map((json) => ApiFavourite.fromJson(json)).toList();
+  }
+
+  Future<void> setGroup(int? group) async {
+    await Api().patch("/favourites/groups/${targetType.apiValue}/$targetId", {
+      'group_id': group,
+    });
+  }
+
   static Future<ApiFavourite?> get(
     FavouriteType type,
     int targetId, {
     bool fillOut = false,
   }) async {
     final data = await Api().get(
-      "/favourites"
-      "?target_type=${type.apiValue}"
-      "&target_id=$targetId"
-      "&fill_out=$fillOut",
+      "/favourites/${type.apiValue}/$targetId"
+      "?fill_out=$fillOut",
     );
 
     if (data == null) {
@@ -83,7 +99,9 @@ enum FavouriteType {
   vehicleType(3, "VehicleType"),
   livery(4, "Livery"),
   service(5, "Service"),
-  comment(6, "Comment");
+  comment(6, "Comment"),
+  tram(7, "Tram"),
+  modelBus(8, "ModelBus");
 
   final int value;
   final String apiValue;

@@ -43,4 +43,14 @@ class ApiTxOperator {
 
     return (data as List).map((json) => ApiTxOperator.fromJson(json)).toList();
   }
+
+  static Future<ApiTxOperator?> get(String id) async {
+    final data = await Api().get("/operators/${Uri.encodeComponent(id)}");
+
+    if (data == null) {
+      return null;
+    }
+
+    return ApiTxOperator.fromJson(data);
+  }
 }

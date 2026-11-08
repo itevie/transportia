@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:transportia/stores/current_user_store.dart';
 
 class StarRating extends StatefulWidget {
   final double averageRating;
@@ -30,10 +32,16 @@ class _StarRatingState extends State<StarRating> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<CurrentUserStore>();
+    final userRatingText = user.loggedIn
+        ? widget.userRating != null
+              ? "\nYour Rating: ${widget.userRating} stars"
+              : ""
+        : "\nLog in to rate";
+
     return Tooltip(
       waitDuration: Duration(milliseconds: 500),
-      message:
-          "Rating: ${widget.averageRating}${widget.userRating != null ? "\nYour Rating: ${widget.userRating}" : ""}",
+      message: "Rating: ${widget.averageRating} stars$userRatingText",
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: List.generate(5, (index) {
@@ -41,7 +49,7 @@ class _StarRatingState extends State<StarRating> {
           final selected = (widget.userRating ?? 0) >= rating;
 
           return IconButton(
-            onPressed: () => setRating(rating),
+            onPressed: !user.loggedIn ? null : () => setRating(rating),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             icon: SizedBox(

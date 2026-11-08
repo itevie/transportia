@@ -11,25 +11,17 @@ final List<BusGroupRecord> busGroupMap = [
   ),
   (
     operators: [
-      "TFLO",
-      "TRAM",
-      "MGBA",
-      "LVBH",
-      "LUTD",
-      "LULD",
-      "LSOV",
-      "LONC",
-      "LGEN",
-      "LDLR",
-      "IFSC",
-      "GAHL",
-      "FLON",
-      "ELBG",
-      "CLKL",
-      "BTRI",
-      "AWAN",
-      "AVLO",
-      "ABLO",
+      "AVLO", // Arriva London
+      "BTRI", // Blue Triangle
+      "DLBU", // Docklands Buses
+      "ELBG", // East London Bus & Coach
+      "FLON", // First Bus London
+      "GAHL", // Go-Ahead London
+      "LONC", // London Central
+      "LGEN", // London General
+      "MBGA", // Metrobus
+      "MTLN", // Metroline Travel
+      "ABLO", // Transport UK
     ],
     t: BusGroup.london,
     color: "#FF0000",

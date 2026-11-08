@@ -1,8 +1,7 @@
 import 'package:dawn_ui_flutter/prompts/prompts.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:transportia/api/route_checklist.dart';
-import 'package:transportia/main_old.dart';
-import 'package:transportia/widgets/pages/service_checklist.dart';
 
 class ServiceChecklists extends StatefulWidget {
   const ServiceChecklists({super.key});
@@ -54,14 +53,14 @@ class _ServiceChecklistsState extends State<ServiceChecklists> {
                 const SizedBox(height: 8),
 
                 ...checklists.map((x) {
-                  final count = x.items.length;
-                  final completed = x.items
-                      .where((x) => x.completedAt != null)
-                      .length;
+                  final count = x.itemCount;
+                  final completed = x.completedItemCount;
 
                   return Card(
                     child: ListTile(
-                      onTap: () => setAppPage(ServiceChecklist(checklist: x)),
+                      onTap: () =>
+                          context.pushReplacement("/checklist/${x.id}"),
+                      // setAppPage(ServiceChecklist(checklist: x)),
                       title: Text(x.title),
                       subtitle: Text("$completed/$count"),
                       trailing: const Icon(Icons.chevron_right),

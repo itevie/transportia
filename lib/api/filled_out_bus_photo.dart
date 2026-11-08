@@ -1,13 +1,15 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 import 'package:transportia/api/api.dart';
 import 'package:transportia/api/bus_photo_details.dart';
 import 'package:transportia/api/photo_rating_response.dart';
 import 'package:transportia/api/user.dart';
-import 'package:transportia/util/prefs.dart';
+import 'package:dio/dio.dart'
+    show Dio, FormData, MultipartFile, DioMediaType, BaseOptions;
+import 'package:mime/mime.dart' show lookupMimeType;
+import 'package:transportia/constants.dart';
 
 class ApiFilledOutPhotoBus {
   final int id;
@@ -90,7 +92,7 @@ class ApiFilledOutPhotoBus {
     int? bdVehicleId,
     String? bdRoute,
     bool? bdHasMatchedVehicle,
-    int? pageLength = 50,
+    int? pageLength = pageSize,
     int? offset,
   }) async {
     String query = "";
@@ -171,90 +173,60 @@ class ApiFilledOutPhotoBus {
 
   static Future<List<ApiFilledOutPhotoBus>> upload(
     List<XFile> files, {
-    void Function(double progress)? onProgress,
+    void Function(String file, double progress)? onProgress,
   }) async {
-    final token = Preferences().getString("token");
+    final uploaded = <ApiFilledOutPhotoBus>[];
 
-    final request = http.MultipartRequest(
-      "POST",
-      Uri.parse("${Api().baseUrl}/photos/upload"),
+    // Use the Dio instance configured for your API's base URL and authentication.
+    final dio = Dio(
+      BaseOptions(baseUrl: Api().baseUrl, headers: Api().headers()),
     );
 
-    request.headers["Authorization"] = "Bearer $token";
+    for (final file in files) {
+      // Start progress for this file.
+      onProgress?.call(file.name, 0);
 
-    for (final image in files) {
-      final bytes = await image.readAsBytes();
+      final bytes = await file.readAsBytes();
 
-      final extension = image.name.split('.').last.toLowerCase();
+      final mimeType = lookupMimeType(
+        file.name,
+        headerBytes: bytes.take(12).toList(),
+      );
 
-      final mediaType = switch (extension) {
-        "jpg" || "jpeg" => http.MediaType("image", "jpeg"),
-        "png" => http.MediaType("image", "png"),
-        _ => throw Exception("Unsupported image type: .$extension"),
-      };
-
-      request.files.add(
-        http.MultipartFile.fromBytes(
-          "file",
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
           bytes,
-          filename: image.name,
-          contentType: mediaType,
+          filename: file.name,
+          contentType: mimeType == null ? null : DioMediaType.parse(mimeType),
+        ),
+      });
+
+      print(file.path);
+      print(file.name);
+
+      final response = await dio.post(
+        '/photos/upload',
+        data: formData,
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            final progress = (sent / total * 100).clamp(0.0, 100.0).toDouble();
+
+            onProgress?.call(file.name, progress);
+          }
+        },
+      );
+
+      // The upload has completed successfully.
+      onProgress?.call(file.name, 100);
+
+      uploaded.add(
+        ApiFilledOutPhotoBus.fromJson(
+          Map<String, dynamic>.from(response.data[0] as Map),
         ),
       );
     }
 
-    // Calculate the total multipart request size, including headers.
-    final totalBytes = request.contentLength;
-    var uploadedBytes = 0;
-
-    final stream = request.finalize().transform(
-      StreamTransformer<List<int>, List<int>>.fromHandlers(
-        handleData: (chunk, sink) {
-          uploadedBytes += chunk.length;
-
-          onProgress?.call(
-            totalBytes > 0 ? (uploadedBytes / totalBytes).clamp(0.0, 1.0) : 0.0,
-          );
-
-          sink.add(chunk);
-        },
-      ),
-    );
-
-    // Stream the request with progress tracking.
-    // Stream the request with progress tracking.
-    final streamedRequest = http.StreamedRequest(request.method, request.url);
-
-    streamedRequest.headers.addAll(request.headers);
-    streamedRequest.contentLength = totalBytes;
-
-    stream.listen(
-      (chunk) => streamedRequest.sink.add(chunk),
-      onError: (Object error, StackTrace stackTrace) {
-        streamedRequest.sink.addError(error, stackTrace);
-      },
-      onDone: () => streamedRequest.sink.close(),
-      cancelOnError: true,
-    );
-
-    final client = http.Client();
-
-    try {
-      final response = await client.send(streamedRequest);
-      final body = await response.stream.bytesToString();
-
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw Exception("Upload failed (${response.statusCode}): $body");
-      }
-
-      final data = jsonDecode(body);
-
-      return (data as List)
-          .map((x) => ApiFilledOutPhotoBus.fromJson(x))
-          .toList();
-    } finally {
-      client.close();
-    }
+    return uploaded;
   }
 
   Future<void> updateDetails({
@@ -268,33 +240,33 @@ class ApiFilledOutPhotoBus {
   }) async {
     final body = <String, dynamic>{};
 
-    if (matchedVehicleId != null) {
-      body["matched_vehicle_id"] = matchedVehicleId;
-    }
+    // if (matchedVehicleId != null) {
+    body["matched_vehicle_id"] = matchedVehicleId;
+    // }
 
     if (overrideMatch != null) {
       body["override_match"] = overrideMatch;
     }
 
-    if (reg != null) {
-      body["reg"] = reg;
-    }
+    // if (reg != null) {
+    body["reg"] = reg;
+    // }
 
-    if (fleet != null) {
-      body["fleet"] = fleet;
-    }
+    // if (fleet != null) {
+    body["fleet"] = fleet;
+    // }
 
-    if (liveryId != null) {
-      body["livery_id"] = liveryId;
-    }
+    // if (liveryId != null) {
+    body["livery_id"] = liveryId;
+    // }
 
-    if (vehicleTypeId != null) {
-      body["vehicle_type_id"] = vehicleTypeId;
-    }
+    // if (vehicleTypeId != null) {
+    body["vehicle_type_id"] = vehicleTypeId;
+    // }
 
-    if (routeId != null) {
-      body["route_id"] = routeId;
-    }
+    // if (routeId != null) {
+    body["route_id"] = routeId;
+    // }
 
     await Api().patch("/photos/$id/bus-details", body);
   }
@@ -323,6 +295,10 @@ class ApiFilledOutPhotoBus {
     final response = await Api().delete("/photos/$id/ratings");
 
     return ApiPhotoRatingResponse.fromJson(response);
+  }
+
+  Future<void> delete() async {
+    await Api().delete("/photos/$id");
   }
 
   Future<ApiPhotoRatingResponse> getRating() async {

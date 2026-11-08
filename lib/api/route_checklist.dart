@@ -11,7 +11,8 @@ class ApiRouteChecklist {
 
   final String createdAt;
 
-  final List<ApiRouteChecklistItem> items;
+  final int itemCount;
+  final int completedItemCount;
 
   ApiRouteChecklist({
     required this.id,
@@ -19,7 +20,8 @@ class ApiRouteChecklist {
     this.description,
     required this.ownerId,
     required this.createdAt,
-    required this.items,
+    required this.itemCount,
+    required this.completedItemCount,
   });
 
   factory ApiRouteChecklist.fromJson(Map<String, dynamic> json) {
@@ -29,9 +31,8 @@ class ApiRouteChecklist {
       description: json["description"],
       ownerId: json["owner_id"],
       createdAt: json["created_at"],
-      items: (json["items"] as List)
-          .map((x) => ApiRouteChecklistItem.fromJson(x))
-          .toList(),
+      itemCount: json["item_count"],
+      completedItemCount: json["completed_item_count"],
     );
   }
 
@@ -49,6 +50,16 @@ class ApiRouteChecklist {
     return ApiRouteChecklist.fromJson(response);
   }
 
+  Future<List<ApiRouteChecklistItem>> getItems() async {
+    final response = await Api().get("/route-checklists/$id/items");
+
+    print(response);
+
+    return (response as List)
+        .map((item) => ApiRouteChecklistItem.fromJson(item))
+        .toList();
+  }
+
   static Future<void> create(String title, String? description) async {
     await Api().post("/route-checklists", {
       "title": title,
@@ -62,5 +73,18 @@ class ApiRouteChecklist {
 
   Future<void> addOperator(String operatorId) async {
     await Api().post("/route-checklists/$id/items/operators/$operatorId", {});
+  }
+
+  Future<void> addBulkOperator(List<String> operators) async {
+    await Api().post("/route-checklists/$id/items/operators-bulk", operators);
+  }
+
+  static Future<int> countBulkOperator(List<String> operators) async {
+    final data = await Api().post(
+      "/route-checklists/items/operators-bulk/count",
+      operators,
+    );
+
+    return data as int;
   }
 }

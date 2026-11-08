@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:transportia/api/comment.dart';
+import 'package:transportia/stores/current_user_store.dart';
 import 'package:transportia/widgets/comment.dart';
 import 'package:transportia/widgets/profile_picture.dart';
 
@@ -59,44 +61,48 @@ class _CommentThreadState extends State<CommentThread> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<CurrentUserStore>();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ProfilePicture(usage: ProfilePictureUsage.nextToName),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                minLines: 1,
-                maxLines: 5,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  hintText: 'Write a comment...',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
+        if (user.loggedIn) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ProfilePicture(usage: ProfilePictureUsage.nextToName),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  minLines: 1,
+                  maxLines: 5,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    hintText: 'Write a comment...',
+                    border: OutlineInputBorder(),
+                    alignLabelWithHint: true,
+                  ),
+                  onSubmitted: (_) => _sendComment(),
                 ),
-                onSubmitted: (_) => _sendComment(),
               ),
-            ),
-            const SizedBox(width: 8),
-            IconButton.filled(
-              onPressed: _sending ? null : _sendComment,
-              tooltip: 'Send comment',
-              icon: _sending
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.send),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+              const SizedBox(width: 8),
+              IconButton.filled(
+                onPressed: _sending ? null : _sendComment,
+                tooltip: 'Send comment',
+                icon: _sending
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.send),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
         ...widget.comments.map(
           (comment) => CommentWidget(
             comment: comment,

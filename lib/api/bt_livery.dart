@@ -44,4 +44,14 @@ class ApiBtLivery {
 
     return (data as List).map((json) => ApiBtLivery.fromJson(json)).toList();
   }
+
+  static Future<ApiBtLivery?> get(int id) async {
+    final data = await Api().get("/liveries/$id");
+
+    if (data == null) {
+      return null;
+    }
+
+    return ApiBtLivery.fromJson(data);
+  }
 }

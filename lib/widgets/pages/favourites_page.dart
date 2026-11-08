@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:transportia/api/bt_vehicle.dart';
 
 import 'package:transportia/api/favourites.dart';
+import 'package:transportia/api/favourites_group.dart';
 import 'package:transportia/api/filled_out_bus_photo.dart';
-import 'package:transportia/util_widgets/tab_bar.dart';
+import 'package:transportia/api/tram.dart';
+import 'package:transportia/prompts/input.dart';
+import 'package:transportia/widgets/lists/tram_list.dart';
+import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/lists/bus_photos_list.dart';
 import 'package:transportia/widgets/lists/vehicle_list.dart';
 
@@ -17,25 +21,39 @@ class FavouritesPage extends StatefulWidget {
 class _FavouritesPageState extends State<FavouritesPage>
     with SingleTickerProviderStateMixin {
   List<ApiBtVehicle> vehicles = [];
+  List<ApiTram> trams = [];
   List<ApiFavourite> services = [];
   List<ApiFavourite> operators = [];
   List<ApiFilledOutPhotoBus> busPhotos = [];
+
+  List<ApiFavouriteGroup> groups = [];
 
   bool loadingVehicles = false;
   bool loadingServices = false;
   bool loadingOperators = false;
   bool loadingPhotos = false;
+  bool loadingTrams = false;
 
   bool loadedVehicles = false;
   bool loadedServices = false;
   bool loadedOperators = false;
   bool loadedPhotos = false;
+  bool loadedTrams = false;
 
   @override
   void initState() {
     super.initState();
 
+    _loadGroups();
     _loadPhotos();
+  }
+
+  Future<void> _loadGroups() async {
+    final loaded = await ApiFavouriteGroup.getAll();
+
+    setState(() {
+      groups = loaded;
+    });
   }
 
   Future<void> _loadVehicles() async {
@@ -57,6 +75,39 @@ class _FavouritesPageState extends State<FavouritesPage>
 
       setState(() {
         vehicles = loaded.map((f) => ApiBtVehicle.fromJson(f.object)).toList();
+        loadedVehicles = true;
+        loadingVehicles = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        loadingVehicles = false;
+      });
+
+      print(e);
+    }
+  }
+
+  Future<void> _loadTrams() async {
+    if (loadedVehicles || loadingVehicles) {
+      return;
+    }
+
+    setState(() {
+      loadingVehicles = true;
+    });
+
+    try {
+      final loaded = await ApiFavourite.getByType(
+        FavouriteType.tram,
+        fillOut: true,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        trams = loaded.map((f) => ApiTram.fromJson(f.object)).toList();
         loadedVehicles = true;
         loadingVehicles = false;
       });
@@ -213,13 +264,55 @@ class _FavouritesPageState extends State<FavouritesPage>
           name: 'Photos',
           icon: Icons.photo_outlined,
           onSelected: _loadPhotos,
-          child: _buildPhotos(),
+          child: FavouritesTab(
+            type: FavouriteType.photo,
+            groups: groups,
+            reload: () {
+              _loadGroups();
+            },
+            builder: (favourites) => BusPhotoList(
+              photos: favourites
+                  .map(
+                    (favourite) =>
+                        ApiFilledOutPhotoBus.fromJson(favourite.object),
+                  )
+                  .toList(),
+            ),
+          ),
         ),
         AppTab(
-          name: 'Vehicles',
+          name: 'Buses',
           icon: Icons.directions_bus_outlined,
           onSelected: _loadVehicles,
-          child: _buildVehicles(),
+          child: FavouritesTab(
+            type: FavouriteType.vehicle,
+            groups: groups,
+            reload: () {
+              _loadGroups();
+            },
+            builder: (favourites) => VehicleList(
+              vehicles: favourites
+                  .map((f) => ApiBtVehicle.fromJson(f.object))
+                  .toList(),
+            ),
+          ),
+        ),
+        AppTab(
+          name: 'Trams',
+          icon: Icons.tram_outlined,
+          onSelected: _loadTrams,
+          child: FavouritesTab(
+            type: FavouriteType.tram,
+            groups: groups,
+            reload: () {
+              _loadGroups();
+            },
+            builder: (favourites) => TramList(
+              vehicles: favourites
+                  .map((f) => ApiTram.fromJson(f.object))
+                  .toList(),
+            ),
+          ),
         ),
         AppTab(
           name: 'Services',
@@ -234,6 +327,144 @@ class _FavouritesPageState extends State<FavouritesPage>
           child: _buildOperators(),
         ),
       ],
+    );
+  }
+}
+
+class FavouritesTab extends StatefulWidget {
+  final FavouriteType type;
+  final List<ApiFavouriteGroup> groups;
+  final Widget Function(List<ApiFavourite> favourites) builder;
+  final VoidCallback reload;
+
+  const FavouritesTab({
+    super.key,
+    required this.type,
+    required this.groups,
+    required this.builder,
+    required this.reload,
+  });
+
+  @override
+  State<FavouritesTab> createState() => _FavouritesTabState();
+}
+
+class _FavouritesTabState extends State<FavouritesTab> {
+  int? currentGroup;
+  List<ApiFavourite> loaded = [];
+
+  Future<void> loadGroup(int? group) async {
+    setState(() {
+      loaded = [];
+    });
+
+    List<ApiFavourite> results;
+    if (group == null) {
+      results = await ApiFavourite.getByType(widget.type, fillOut: true);
+    } else {
+      results = await ApiFavourite.getByGroup(group, fillOut: true);
+    }
+
+    setState(() {
+      loaded = results;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredGroups = widget.groups
+        .where((x) => x.favouriteType == widget.type)
+        .toList();
+
+    if (currentGroup != null) {
+      final groupName = currentGroup == -1
+          ? "All (${loaded.length})"
+          : "${widget.groups.firstWhere((x) => x.id == currentGroup).name} (${loaded.length})";
+
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      currentGroup = null;
+                    });
+                  },
+                  icon: const Icon(Icons.chevron_left),
+                ),
+                Text(groupName),
+                SizedBox.shrink(),
+              ],
+            ),
+            const SizedBox(height: 8),
+            widget.builder(loaded),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 6,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 1,
+      ),
+      itemCount: filteredGroups.length + 2,
+      itemBuilder: (context, index) {
+        late final Widget child;
+        late final VoidCallback onTap;
+
+        if (index == 0) {
+          child = const Text("All", textAlign: TextAlign.center);
+          onTap = () {
+            loadGroup(null);
+            setState(() {
+              currentGroup = -1;
+            });
+          };
+        } else if (index == filteredGroups.length + 1) {
+          child = Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [Icon(Icons.add), Text("New Group")],
+          );
+          onTap = () async {
+            final name = await showInputPrompt(
+              context,
+              const Text("Group Name"),
+              null,
+            );
+
+            if (name == null) return;
+
+            await ApiFavouriteGroup.create(widget.type, name);
+            widget.reload();
+          };
+        } else {
+          final group = filteredGroups[index - 1];
+          child = Text(group.name, textAlign: TextAlign.center);
+          onTap = () {
+            loadGroup(group.id);
+            setState(() {
+              currentGroup = group.id;
+            });
+          };
+        }
+
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Center(
+              child: Padding(padding: const EdgeInsets.all(8), child: child),
+            ),
+          ),
+        );
+      },
     );
   }
 }

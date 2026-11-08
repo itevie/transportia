@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 Future<T> showLoadingPrompt<T>(
   BuildContext context,
-  Future<T> Function(void Function(double progress) onProgress) future, {
+  Future<T> Function(void Function(String fileName, double progress) onProgress)
+  future, {
   Widget? title,
   Widget? message,
 }) async {
   var progress = 0.0;
+  String? fileName;
   StateSetter? updateDialog;
 
   final dialogFuture = showDialog<void>(
@@ -24,11 +26,11 @@ Future<T> showLoadingPrompt<T>(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                message ?? const Text("Loading…"),
+                Text("Uploading $fileName"),
                 const SizedBox(height: 16),
                 LinearProgressIndicator(value: progress),
                 const SizedBox(height: 8),
-                Text("${(progress * 100).toStringAsFixed(0)}%"),
+                Text("${(progress).toStringAsFixed(0)}%"),
               ],
             ),
           );
@@ -40,8 +42,9 @@ Future<T> showLoadingPrompt<T>(
   final navigator = Navigator.of(context, rootNavigator: true);
 
   try {
-    final result = await future((value) {
+    final result = await future((name, value) {
       progress = value;
+      fileName = name;
       updateDialog?.call(() {});
     });
 

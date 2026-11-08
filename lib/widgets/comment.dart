@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:transportia/api/comment.dart';
 import 'package:transportia/api/favourites.dart';
-import 'package:transportia/util_widgets/drop_down.dart';
-import 'package:transportia/util_widgets/sub_text.dart';
+import 'package:transportia/stores/current_user_store.dart';
+import 'package:transportia/widgets/util/drop_down.dart';
+import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/favourite_icon.dart';
 import 'package:transportia/widgets/profile_picture.dart';
 
@@ -45,6 +47,7 @@ class _CommentWidgetState extends State<CommentWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<CurrentUserStore>();
     final comment = widget.comment;
 
     return Card(
@@ -111,18 +114,19 @@ class _CommentWidgetState extends State<CommentWidget> {
                           ],
                         ),
                       ),
-                      TDropDownMenu(
-                        options: {
-                          "Edit": () {},
-                          "Delete": () {
-                            if (widget.onDelete != null) widget.onDelete!();
+                      if (user.loggedIn)
+                        TDropDownMenu(
+                          options: {
+                            "Edit": () {},
+                            "Delete": () {
+                              if (widget.onDelete != null) widget.onDelete!();
+                            },
                           },
-                        },
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.more_vert),
+                          child: IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.more_vert),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ],

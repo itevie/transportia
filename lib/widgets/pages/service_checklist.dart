@@ -7,6 +7,7 @@ import 'package:transportia/api/route_checklist_item.dart';
 import 'package:transportia/api/tx_line.dart';
 import 'package:transportia/prompts/operator_search.dart';
 import 'package:transportia/prompts/route_checklist_prompt.dart';
+import 'package:transportia/prompts/service_presets.dart';
 import 'package:transportia/widgets/service_number.dart';
 
 class ServiceChecklist extends StatefulWidget {
@@ -23,6 +24,9 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
   late List<ApiRouteChecklistItem> allItems;
 
   List<ApiRouteChecklistItem> items = [];
+  List<int> ignoredChecks = [];
+
+  bool completedOnly = false;
 
   @override
   void initState() {
@@ -30,16 +34,16 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
 
     searchController = TextEditingController();
 
-    allItems = widget.checklist.items;
-    items = allItems;
+    reload();
   }
 
   void reload() async {
-    final loaded = await ApiRouteChecklist.fetch(widget.checklist.id);
+    // final loaded = await ApiRouteChecklist.fetch(widget.checklist.id);
+    final items = await widget.checklist.getItems();
 
     setState(() {
-      allItems = loaded.items;
-      items = loaded.items;
+      allItems = items;
+      this.items = items;
     });
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -73,23 +77,28 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
 
   @override
   Widget build(BuildContext context) {
-    final sortedItems = [...items]
-      ..sort((a, b) {
-        final aName = a.line.name.trim().toLowerCase();
-        final bName = b.line.name.trim().toLowerCase();
+    final sortedItems =
+        [
+            ...items,
+          ].where((x) => completedOnly ? x.completedAt != null : true).toList()
+          ..sort((a, b) {
+            final aName = a.line.name.trim().toLowerCase();
+            final bName = b.line.name.trim().toLowerCase();
 
-        final aNumber = int.tryParse(aName);
-        final bNumber = int.tryParse(bName);
+            final aNumber = int.tryParse(aName);
+            final bNumber = int.tryParse(bName);
 
-        if (aNumber != null && bNumber != null) {
-          return aNumber.compareTo(bNumber);
-        }
+            if (aNumber != null && bNumber != null) {
+              return aNumber.compareTo(bNumber);
+            }
 
-        if (aNumber != null) return -1;
-        if (bNumber != null) return 1;
+            if (aNumber != null) return -1;
+            if (bNumber != null) return 1;
 
-        return aName.compareTo(bName);
-      });
+            return aName.compareTo(bName);
+          });
+
+    final completed = sortedItems.where((x) => x.completedAt != null).length;
 
     return Stack(
       children: [
@@ -102,47 +111,86 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
               onChanged: search,
             ),
 
-            const SizedBox(height: 8),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: sortedItems.length,
-                itemBuilder: (context, index) {
-                  final item = sortedItems[index];
-
-                  return Card(
-                    child: Row(
-                      children: [
-                        ServiceNumber(
-                          lineName: item.line.name,
-                          operator: item.line.operatorNationalCode,
-                        ),
-
-                        const SizedBox(width: 8),
-
-                        Expanded(
-                          child: Text(
-                            item.line.inboundDescription ??
-                                item.line.outboundDescription ??
-                                "",
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-
-                        Checkbox(
-                          key: Key("${item.id}:${item.lineId}"),
-                          value: item.completedAt != null,
-                          onChanged: (_) async {
-                            await item.toggleCompleted();
-                            reload();
-                          },
-                        ),
-                      ],
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 16,
+              runSpacing: 4,
+              children: [
+                Text("$completed/${sortedItems.length} completed"),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Checkbox(
+                      value: completedOnly,
+                      onChanged: (v) {
+                        setState(() {
+                          completedOnly = v ?? false;
+                        });
+                      },
                     ),
-                  );
-                },
-              ),
+                    const Text("Completed?"),
+                  ],
+                ),
+              ],
             ),
+
+            sortedItems.isEmpty
+                ? Expanded(
+                    child: Center(
+                      child: Text(
+                        completedOnly
+                            ? "Nothing completed yet!"
+                            : "No services yet, click the + to add some!",
+                      ),
+                    ),
+                  )
+                : Expanded(
+                    child: ListView.builder(
+                      itemCount: sortedItems.length,
+                      itemBuilder: (context, index) {
+                        final item = sortedItems[index];
+
+                        return Card(
+                          child: Row(
+                            children: [
+                              ServiceNumber(
+                                lineName: item.line.name,
+                                operator: item.line.operatorNationalCode,
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              Expanded(
+                                child: Text(
+                                  item.line.inboundDescription ??
+                                      item.line.outboundDescription ??
+                                      "",
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+
+                              Checkbox(
+                                key: Key("${item.id}:${item.lineId}"),
+                                value: item.completedAt != null,
+                                onChanged: (_) async {
+                                  if (ignoredChecks.contains(item.id)) return;
+                                  ignoredChecks.add(item.id);
+
+                                  try {
+                                    await item.toggleCompleted();
+                                    reload();
+                                  } finally {
+                                    ignoredChecks.remove(item.id);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
           ],
         ),
 
@@ -155,6 +203,7 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
 
               if (result == "Operator") {
                 final operator = await showOperatorSearchPrompt(
+                  // ignore: use_build_context_synchronously
                   context: context,
                 );
 
@@ -166,6 +215,7 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
                 );
 
                 final confirmed = await showConfirmPrompt(
+                  // ignore: use_build_context_synchronously
                   context,
                   const Text("Add Lines?"),
                   Text(
@@ -179,6 +229,28 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
                 if (!confirmed) return;
 
                 await widget.checklist.addOperator(operator.nationalCode!);
+              } else if (result == "Preset") {
+                // ignore: use_build_context_synchronously, unused_local_variable
+                final preset = await showServicePresetPrompt(context: context);
+                if (preset == null) return;
+
+                final count = await ApiRouteChecklist.countBulkOperator(
+                  preset.value,
+                );
+
+                print(preset.value);
+
+                final confirmed = await showConfirmPrompt(
+                  context,
+                  const Text("Add Lines?"),
+                  Text(
+                    "Are you sure you want to add $count lines from ${preset.value.length} operators to the ${widget.checklist.title} checlist?",
+                  ),
+                );
+
+                if (!confirmed) return;
+
+                await widget.checklist.addBulkOperator(preset.value);
               }
 
               reload();
