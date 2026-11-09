@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/tram.dart';
 import 'package:transportia/cm/tram.dart';
-import 'package:transportia/cm/vehicle.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
-import 'package:transportia/util/vehicle_icons.dart';
 import 'package:transportia/widgets/util/withdrawn.dart';
 
 class TramCard extends StatefulWidget {

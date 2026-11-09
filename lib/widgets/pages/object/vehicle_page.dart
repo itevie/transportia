@@ -42,10 +42,10 @@ class _VehiclePageState extends State<VehiclePage> {
       search: widget.vehicle.reg,
     );
 
-    ApiBtVehicle? vehicle;
-    if (reload) {
-      loadVehicle();
-    }
+    // ApiBtVehicle? vehicle;
+    // if (reload) {
+    //   loadVehicle();
+    // }
 
     setState(() {
       photos = loadedPhotos;

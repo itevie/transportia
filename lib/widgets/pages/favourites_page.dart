@@ -224,14 +224,6 @@ class _FavouritesPageState extends State<FavouritesPage>
     }
   }
 
-  Widget _buildVehicles() {
-    if (loadingVehicles) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return SingleChildScrollView(child: VehicleList(vehicles: vehicles));
-  }
-
   Widget _buildServices() {
     if (loadingServices) {
       return const Center(child: CircularProgressIndicator());
@@ -246,14 +238,6 @@ class _FavouritesPageState extends State<FavouritesPage>
     }
     return SizedBox();
     // return OperatorFavouriteList(favourites: operators);
-  }
-
-  Widget _buildPhotos() {
-    if (loadingPhotos) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return SingleChildScrollView(child: BusPhotoList(photos: busPhotos));
   }
 
   @override

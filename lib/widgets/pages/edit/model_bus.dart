@@ -4,9 +4,6 @@ import 'package:transportia/api/bt_livery.dart';
 import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/bt_vehicle_type.dart';
 import 'package:transportia/api/model_bus.dart';
-import 'package:transportia/api/tram.dart';
-import 'package:transportia/api/tram_operator.dart';
-import 'package:transportia/api/tram_type.dart';
 import 'package:transportia/api/tx_line.dart';
 import 'package:transportia/api/tx_operator.dart';
 import 'package:transportia/main.dart';
@@ -14,8 +11,6 @@ import 'package:transportia/prompts/livery_search.dart';
 import 'package:transportia/prompts/model_bus_manufacturer.dart';
 import 'package:transportia/prompts/operator_search.dart';
 import 'package:transportia/prompts/route_search.dart';
-import 'package:transportia/prompts/tram_operator.dart';
-import 'package:transportia/prompts/tram_type.dart';
 import 'package:transportia/prompts/vehicle_search.dart';
 import 'package:transportia/prompts/vehicle_type_search.dart';
 import 'package:transportia/widgets/inputs/search_field.dart';
@@ -25,7 +20,6 @@ import 'package:transportia/widgets/inputs/search_field_or_manual.dart';
 import 'package:transportia/widgets/inputs/search_field_text.dart';
 import 'package:transportia/widgets/object/model_bus.dart';
 import 'package:transportia/widgets/util/edit_object.dart';
-import 'package:transportia/widgets/object/tram_card.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 
 class ModelBusEditPage extends StatefulWidget {
@@ -145,7 +139,7 @@ class _ModelBusEditPageState extends State<ModelBusEditPage> {
           return showError("Manufacturer cannot be empty");
         }
 
-        if (data.productCode == null || data.productCode!.isEmpty) {
+        if (data.productCode.isEmpty) {
           return showError("Product code cannot be empty");
         }
 

@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:transportia/api/tram.dart';
 import 'package:transportia/widgets/lists/tram_list.dart';
 import 'package:transportia/widgets/lists/tram_list_rows.dart';
-import 'package:transportia/widgets/lists/vehicle_list.dart';
 import 'package:transportia/widgets/util/search_page.dart';
 
 class TramsSearchPage extends StatefulWidget {

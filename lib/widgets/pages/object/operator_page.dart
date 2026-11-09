@@ -8,7 +8,6 @@ import 'package:transportia/api/tx_operator.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/comment_thread.dart';
-import 'package:transportia/widgets/pages/home.dart';
 import 'package:transportia/widgets/service_number.dart';
 
 import '../../livery/livery.dart';
@@ -66,7 +65,6 @@ class _OperatorPageState extends State<OperatorPage> {
       vehicles = loadedVehicles;
       vehiclesMapped = mapped;
       this.liveries = liveries;
-      if (comments != null) this.comments = comments;
     });
   }
 

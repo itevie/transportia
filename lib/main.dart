@@ -24,7 +24,11 @@ void main() async {
   GoRouter.optionURLReflectsImperativeAPIs = true;
 
   await checkLogin();
-  await ApiMeta.instance.init();
+  try {
+    await ApiMeta.instance.init();
+  } catch (e) {
+    print(e);
+  }
 
   currentUri = transportiaRouter.routerDelegate.currentConfiguration.uri
       .toString();

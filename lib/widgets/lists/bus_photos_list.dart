@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:transportia/api/favourites.dart';
 
 import 'package:transportia/api/filled_out_bus_photo.dart';
-import 'package:transportia/widgets/util/drop_down.dart';
 import 'package:transportia/widgets/object/bus_photo_image_card.dart';
 
 class BusPhotoList extends StatelessWidget {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/cm/vehicle.dart';

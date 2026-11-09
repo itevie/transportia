@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:transportia/api/model_bus.dart';
-import 'package:transportia/api/tram.dart';
 import 'package:transportia/widgets/object/model_bus.dart';
-
-import 'package:transportia/widgets/object/tram_card.dart';
 
 class ModelBusList extends StatelessWidget {
   final List<ApiModelBus> modelBuses;

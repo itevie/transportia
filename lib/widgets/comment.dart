@@ -31,6 +31,7 @@ class CommentWidget extends StatefulWidget {
 }
 
 class _CommentWidgetState extends State<CommentWidget> {
+  // ignore: unused_field
   bool _showReplies = false;
 
   String _formatDate(String date) {

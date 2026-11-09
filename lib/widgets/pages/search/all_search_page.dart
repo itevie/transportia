@@ -6,7 +6,6 @@ import 'package:transportia/api/big_search.dart';
 import 'package:transportia/cm/service.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/util/icons.dart';
-import 'package:transportia/widgets/pages/home.dart';
 import 'package:transportia/widgets/profile_picture.dart';
 import 'package:transportia/widgets/service_number.dart';
 
