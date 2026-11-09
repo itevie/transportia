@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:transportia/api/filled_out_bus_photo.dart';
 import 'package:transportia/prompts/progress.dart';
 import 'package:transportia/stores/current_user_store.dart';
+import 'package:transportia/util/date.dart';
 import 'package:transportia/util/images.dart';
 import 'package:transportia/widgets/lists/bus_photos_list.dart';
 
@@ -34,14 +35,12 @@ class _UploadPageState extends State<UploadPage> {
     for (final picture in userPictures) {
       final date = DateTime.parse(picture.createdAt);
 
-      // Remove the time component.
       final day = DateTime(date.year, date.month, date.day);
 
       mapped.putIfAbsent(day.toIso8601String(), () => []);
       mapped[day.toIso8601String()]!.add(picture);
     }
 
-    // Sort newest date first.
     final sorted = Map.fromEntries(
       mapped.entries.toList()..sort(
         (a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)),
@@ -56,8 +55,6 @@ class _UploadPageState extends State<UploadPage> {
 
   void upload() async {
     final images = await pickImages();
-
-    // await ApiFilledOutPhotoBus.upload(images);
 
     await showLoadingPrompt(
       context,
@@ -92,33 +89,9 @@ class _UploadPageState extends State<UploadPage> {
           ),
           ...mappedUserPictures.entries.map((x) {
             return ExpansionTile(
-              title: Text("${x.key.toString()} (${x.value.length} Photos)"),
+              title: Text("${formatIsoDate(x.key)} (${x.value.length} Photos)"),
               initiallyExpanded: x.key == mappedUserPictures.entries.first.key,
-              children: [
-                BusPhotoList(photos: x.value),
-                // GridView.builder(
-                //   shrinkWrap: true,
-                //   padding: const EdgeInsets.all(8),
-                //   physics: const NeverScrollableScrollPhysics(),
-                //   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                //     maxCrossAxisExtent: 250,
-                //     crossAxisSpacing: 8,
-                //     mainAxisSpacing: 8,
-                //     childAspectRatio: 1 / 1,
-                //   ),
-                //   itemCount: x.value.length,
-                //   itemBuilder: (context, index) {
-                //     final image = x.value[index];
-                //     return ImageCard(
-                //       onTap: () {
-                //         setAppPage(BusPhotoViewer(photo: image));
-                //       },
-                //       title: image.fileName,
-                //       url: image.withSize(300),
-                //     );
-                //   },
-                // ),
-              ],
+              children: [BusPhotoList(photos: x.value)],
             );
           }),
         ],

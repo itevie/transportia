@@ -102,8 +102,13 @@ class TransportiaShell extends StatelessWidget {
       '/search' => 'Search',
       '/upload' => 'Upload Photo',
       '/login' => 'Log In',
+      '/model-buses' => "Model Buses",
+      '/photos' => "Bus Photos",
+      '/checklists' => 'Your Checklists',
+      '/tools' => "Transportia Tools",
+      '/vehicles' => "Bus Search",
+      '/trams' => "Tram Search",
       _ => "Transportia",
-      // _ => currentRoute?.name ?? 'Transportia',
     };
 
     final wantsPadding = [
@@ -118,10 +123,9 @@ class TransportiaShell extends StatelessWidget {
       "/user",
       "/trams",
       "/tools",
+      '/model-bus-listings',
     ].contains(basePath);
 
-    // final currentPage = currentRoute;
-    // final activeBranch = navigationShell.currentIndex;
     return Listener(
       onPointerDown: (event) {
         if (defaultTargetPlatform != TargetPlatform.linux) return;
@@ -205,6 +209,11 @@ class TransportiaShell extends StatelessWidget {
                       title: const Text('Home'),
                       onTap: () => _goTo(context, '/'),
                     ),
+                    ListTile(
+                      leading: const Icon(Icons.forum),
+                      title: const Text('Forums'),
+                      onTap: () => _goTo(context, '/not-implemented'),
+                    ),
                     Divider(),
                     ListTile(
                       leading: const Icon(Icons.photo),
@@ -268,20 +277,6 @@ class TransportiaShell extends StatelessWidget {
         ),
         body: wantsPadding ? PageContainer(child: child) : child,
       ),
-    );
-  }
-}
-
-// Temporary placeholder until the existing user-fetching route is wired up.
-class UserRoutePlaceholder extends StatelessWidget {
-  final int userId;
-
-  const UserRoutePlaceholder({super.key, required this.userId});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Connect this route to your user viewer.')),
     );
   }
 }

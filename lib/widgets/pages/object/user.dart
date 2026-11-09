@@ -4,9 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:transportia/api/filled_out_bus_photo.dart';
 import 'package:transportia/api/user.dart';
 import 'package:transportia/stores/current_user_store.dart';
+import 'package:transportia/widgets/pages/favourites_page.dart';
+import 'package:transportia/widgets/pages/not_implemented.dart';
 import 'package:transportia/widgets/util/icon_with_text.dart';
 import 'package:transportia/widgets/lists/bus_photos_list.dart';
 import 'package:transportia/widgets/profile_picture.dart';
+import 'package:transportia/widgets/util/tab_bar.dart';
 
 class UserViewer extends StatefulWidget {
   final ApiUser user;
@@ -89,198 +92,216 @@ class _UserViewerState extends State<UserViewer> {
   Widget build(BuildContext context) {
     final user = context.watch<CurrentUserStore>();
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Card(
-            child: Padding(
-              padding: EdgeInsetsGeometry.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          child: Padding(
+            padding: EdgeInsetsGeometry.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
 
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          ProfilePicture(
-                            usage: ProfilePictureUsage.userProfile,
-                          ),
-                          const SizedBox(width: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              isEditinng
-                                  ? Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 400,
-                                          child: TextField(
-                                            maxLength: 32,
-                                            controller: displayNameController,
-                                            style: const TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            decoration: const InputDecoration(
-                                              hintText: "Username",
-                                              isDense: true,
-                                              border: InputBorder.none,
-                                              contentPadding: EdgeInsets.zero,
-                                              counterText: "",
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          "${displayNameController.text.length}/32",
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : Text(
-                                      displayName,
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-
-                              isEditinng
-                                  ? Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 400,
-                                          child: TextField(
-                                            controller: handleController,
-                                            maxLength: 16,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                            ),
-                                            decoration: const InputDecoration(
-                                              hintText: "@handle",
-                                              isDense: true,
-                                              border: InputBorder.none,
-                                              contentPadding: EdgeInsets.zero,
-                                              counterText: "",
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          "${handleController.text.length}/16",
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : Text(handle),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (user.loggedIn && widget.user.id == user.user!.id)
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        ProfilePicture(usage: ProfilePictureUsage.userProfile),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             isEditinng
-                                ? FilledButton.icon(
-                                    label: const Text("Save"),
-                                    onPressed: () {
-                                      save();
-                                    },
-                                    icon: const Icon(Icons.save),
+                                ? Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 400,
+                                        child: TextField(
+                                          maxLength: 32,
+                                          controller: displayNameController,
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          decoration: const InputDecoration(
+                                            hintText: "Username",
+                                            isDense: true,
+                                            border: InputBorder.none,
+                                            contentPadding: EdgeInsets.zero,
+                                            counterText: "",
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        "${displayNameController.text.length}/32",
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   )
-                                : ElevatedButton.icon(
-                                    onPressed: () {
-                                      startEditing();
-                                    },
-                                    label: Text("Edit"),
-                                    icon: const Icon(Icons.edit),
+                                : Text(
+                                    displayName,
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                          const SizedBox(height: 4),
-                          IconWithText(
-                            text: Text(photos.length.toString()),
-                            icon: Icon(Icons.camera),
-                          ),
-                          IconWithText(
-                            text: Text("23"),
-                            icon: Icon(Icons.comment),
-                          ),
-                          IconWithText(
-                            text: Text("442"),
-                            icon: Icon(Icons.favorite),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
 
-                  const SizedBox(height: 8),
-                  isEditinng
-                      ? TextField(
-                          controller: bioController,
-                          maxLines: 5,
-                          maxLength: 1000,
-                          decoration: InputDecoration(
-                            hintText: "Type your bio...",
-                            border: OutlineInputBorder(),
-                          ),
-                        )
-                      : Text(bio ?? "", textAlign: TextAlign.start),
-                ],
-              ),
+                            isEditinng
+                                ? Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 400,
+                                        child: TextField(
+                                          controller: handleController,
+                                          maxLength: 16,
+                                          style: const TextStyle(fontSize: 14),
+                                          decoration: const InputDecoration(
+                                            hintText: "@handle",
+                                            isDense: true,
+                                            border: InputBorder.none,
+                                            contentPadding: EdgeInsets.zero,
+                                            counterText: "",
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        "${handleController.text.length}/16",
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Text(handle),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (user.loggedIn && widget.user.id == user.user!.id)
+                          isEditinng
+                              ? FilledButton.icon(
+                                  label: const Text("Save"),
+                                  onPressed: () {
+                                    save();
+                                  },
+                                  icon: const Icon(Icons.save),
+                                )
+                              : ElevatedButton.icon(
+                                  onPressed: () {
+                                    startEditing();
+                                  },
+                                  label: Text("Edit"),
+                                  icon: const Icon(Icons.edit),
+                                ),
+                        const SizedBox(height: 4),
+                        IconWithText(
+                          text: Text(photos.length.toString()),
+                          icon: Icon(Icons.camera),
+                        ),
+                        IconWithText(
+                          text: Text("23"),
+                          icon: Icon(Icons.comment),
+                        ),
+                        IconWithText(
+                          text: Text("442"),
+                          icon: Icon(Icons.favorite),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+                isEditinng
+                    ? TextField(
+                        controller: bioController,
+                        maxLines: 5,
+                        maxLength: 1000,
+                        decoration: InputDecoration(
+                          hintText: "Type your bio...",
+                          border: OutlineInputBorder(),
+                        ),
+                      )
+                    : Text(bio ?? "", textAlign: TextAlign.start),
+              ],
             ),
           ),
+        ),
 
-          const SizedBox(height: 8),
+        const SizedBox(height: 8),
 
-          Row(
-            children: [
-              Text("${photos.length} Photos...", textAlign: TextAlign.start),
-              Spacer(),
-              IconButton(
-                onPressed: () {
-                  context.go("/photos?author=${widget.user.id}");
-                  // setAppPage(PhotoSearchPage(author: widget.user));
-                },
-                icon: const Icon(Icons.search),
+        Expanded(
+          child: AppTabController(
+            tabs: [
+              AppTab(
+                name: "Photos (${photos.length})",
+                icon: Icons.photo,
+                child: SingleChildScrollView(
+                  child: BusPhotoList(photos: photos),
+                ),
+              ),
+              AppTab(
+                name: "Owned Models",
+                icon: Icons.directions_bus,
+                child: SingleChildScrollView(child: NotImplementedPage()),
+              ),
+              AppTab(
+                name: "Favourites",
+                icon: Icons.favorite,
+                child: FavouritesPage(isNested: true),
               ),
             ],
           ),
+        ),
 
-          BusPhotoList(photos: photos),
-          // GridView.builder(
-          //   shrinkWrap: true,
-          //   padding: const EdgeInsets.all(8),
-          //   physics: const NeverScrollableScrollPhysics(),
-          //   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          //     maxCrossAxisExtent: 250,
-          //     crossAxisSpacing: 8,
-          //     mainAxisSpacing: 8,
-          //     childAspectRatio: 4 / 3,
-          //   ),
-          //   itemCount: photos.length,
-          //   itemBuilder: (context, index) {
-          //     final photo = photos[index];
-          //     return ImageCard(
-          //       title: photo.fileName,
-          //       url: "https://transportia-cdn.dawn.rest/${photo.uploadedId}",
-          //       onTap: () {
-          //         setAppPage(BusPhotoViewer(photo: photo));
-          //       },
-          //     );
-          //   },
-          // ),
-        ],
-      ),
+        // Row(
+        //   children: [
+        //     Text("${photos.length} Photos...", textAlign: TextAlign.start),
+        //     Spacer(),
+        //     IconButton(
+        //       onPressed: () {
+        //         context.go("/photos?author=${widget.user.id}");
+        //         // setAppPage(PhotoSearchPage(author: widget.user));
+        //       },
+        //       icon: const Icon(Icons.search),
+        //     ),
+        //   ],
+        // ),
+
+        // BusPhotoList(photos: photos),
+        // GridView.builder(
+        //   shrinkWrap: true,
+        //   padding: const EdgeInsets.all(8),
+        //   physics: const NeverScrollableScrollPhysics(),
+        //   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        //     maxCrossAxisExtent: 250,
+        //     crossAxisSpacing: 8,
+        //     mainAxisSpacing: 8,
+        //     childAspectRatio: 4 / 3,
+        //   ),
+        //   itemCount: photos.length,
+        //   itemBuilder: (context, index) {
+        //     final photo = photos[index];
+        //     return ImageCard(
+        //       title: photo.fileName,
+        //       url: "https://transportia-cdn.dawn.rest/${photo.uploadedId}",
+        //       onTap: () {
+        //         setAppPage(BusPhotoViewer(photo: photo));
+        //       },
+        //     );
+        //   },
+        // ),
+      ],
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:transportia/routing.dart';
 import 'package:transportia/widgets/pages/edit/model_bus.dart';
 import 'package:transportia/widgets/pages/edit/tram_operator.dart';
 import 'package:transportia/widgets/pages/edit/tram_type.dart';
+import 'package:transportia/widgets/pages/not_implemented.dart';
 import 'package:transportia/widgets/pages/search/all_search_page.dart';
 import 'package:transportia/widgets/pages/search/bus_listings.dart';
 import 'package:transportia/widgets/pages/object/bus_photo.dart';
@@ -44,6 +45,10 @@ final transportiaRouter = GoRouter(
       },
       routes: [
         GoRoute(path: '/', builder: (context, state) => HomePage()),
+        GoRoute(
+          path: '/not-implemented',
+          builder: (context, state) => NotImplementedPage(),
+        ),
         GoRoute(path: '/search', builder: (context, state) => AllSearchPage()),
         GoRoute(path: '/upload', builder: (context, state) => UploadPage()),
         GoRoute(path: '/login', builder: (context, state) => LoginPage()),

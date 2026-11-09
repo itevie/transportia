@@ -12,7 +12,8 @@ import 'package:transportia/widgets/lists/bus_photos_list.dart';
 import 'package:transportia/widgets/lists/vehicle_list.dart';
 
 class FavouritesPage extends StatefulWidget {
-  const FavouritesPage({super.key});
+  final bool isNested;
+  const FavouritesPage({super.key, this.isNested = false});
 
   @override
   State<FavouritesPage> createState() => _FavouritesPageState();
@@ -251,6 +252,7 @@ class _FavouritesPageState extends State<FavouritesPage>
           child: FavouritesTab(
             type: FavouriteType.photo,
             groups: groups,
+            isNested: widget.isNested,
             reload: () {
               _loadGroups();
             },
@@ -271,6 +273,7 @@ class _FavouritesPageState extends State<FavouritesPage>
           child: FavouritesTab(
             type: FavouriteType.vehicle,
             groups: groups,
+            isNested: widget.isNested,
             reload: () {
               _loadGroups();
             },
@@ -288,6 +291,7 @@ class _FavouritesPageState extends State<FavouritesPage>
           child: FavouritesTab(
             type: FavouriteType.tram,
             groups: groups,
+            isNested: widget.isNested,
             reload: () {
               _loadGroups();
             },
@@ -320,6 +324,7 @@ class FavouritesTab extends StatefulWidget {
   final List<ApiFavouriteGroup> groups;
   final Widget Function(List<ApiFavourite> favourites) builder;
   final VoidCallback reload;
+  final bool isNested;
 
   const FavouritesTab({
     super.key,
@@ -327,6 +332,7 @@ class FavouritesTab extends StatefulWidget {
     required this.groups,
     required this.builder,
     required this.reload,
+    this.isNested = false,
   });
 
   @override
@@ -398,7 +404,7 @@ class _FavouritesTabState extends State<FavouritesTab> {
         mainAxisSpacing: 8,
         childAspectRatio: 1,
       ),
-      itemCount: filteredGroups.length + 2,
+      itemCount: filteredGroups.length + (widget.isNested ? 1 : 2),
       itemBuilder: (context, index) {
         late final Widget child;
         late final VoidCallback onTap;
@@ -411,7 +417,7 @@ class _FavouritesTabState extends State<FavouritesTab> {
               currentGroup = -1;
             });
           };
-        } else if (index == filteredGroups.length + 1) {
+        } else if (index == filteredGroups.length + 1 && widget.isNested) {
           child = Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [Icon(Icons.add), Text("New Group")],
