@@ -7,17 +7,23 @@ import 'package:transportia/widgets/pages/edit/model_bus.dart';
 import 'package:transportia/widgets/pages/edit/tram_operator.dart';
 import 'package:transportia/widgets/pages/edit/tram_type.dart';
 import 'package:transportia/widgets/pages/not_implemented.dart';
+import 'package:transportia/widgets/pages/object/model_bus.dart';
+import 'package:transportia/widgets/pages/object/tram_operator_page.dart';
+import 'package:transportia/widgets/pages/object/tram_page.dart';
 import 'package:transportia/widgets/pages/search/all_search_page.dart';
 import 'package:transportia/widgets/pages/search/bus_listings.dart';
-import 'package:transportia/widgets/pages/object/bus_photo.dart';
+import 'package:transportia/widgets/pages/object/photo.dart';
 import 'package:transportia/widgets/pages/edit/tram.dart';
 import 'package:transportia/widgets/pages/edit/vehicle.dart';
 import 'package:transportia/widgets/pages/favourites_page.dart';
 import 'package:transportia/widgets/pages/home.dart';
 import 'package:transportia/widgets/pages/login.dart';
 import 'package:transportia/widgets/pages/object/operator_page.dart';
+import 'package:transportia/widgets/pages/search/model_bus_photo_search_page.dart';
 import 'package:transportia/widgets/pages/search/model_buses.dart';
-import 'package:transportia/widgets/pages/search/photo_search_page.dart';
+import 'package:transportia/widgets/pages/search/bus_photo_search_page.dart';
+import 'package:transportia/widgets/pages/search/tram_announcement_audios.dart';
+import 'package:transportia/widgets/pages/search/tram_photo_search_page.dart';
 import 'package:transportia/widgets/pages/service_checklist.dart';
 import 'package:transportia/widgets/pages/service_checklists.dart';
 import 'package:transportia/widgets/pages/tools/tools.dart';
@@ -26,6 +32,7 @@ import 'package:transportia/widgets/pages/tools/tools_tram_operators.dart';
 import 'package:transportia/widgets/pages/tools/tools_tram_type.dart';
 import 'package:transportia/widgets/pages/tools/tools_trams.dart';
 import 'package:transportia/widgets/pages/search/trams.dart';
+import 'package:transportia/widgets/pages/tram_announcement_audio_groups.dart';
 import 'package:transportia/widgets/pages/upload_page.dart';
 import 'package:transportia/widgets/pages/object/user.dart';
 import 'package:transportia/widgets/pages/object/vehicle_page.dart';
@@ -70,11 +77,18 @@ final transportiaRouter = GoRouter(
           builder: (context, state) => ToolTramOperatorsPage(),
         ),
         GoRoute(path: "/trams", builder: (context, state) => TramsSearchPage()),
+
+        GoRoute(
+          path: '/tram/:id',
+          builder: (context, state) => FutureRoute(
+            details: () => getTram(state.pathParameters['id']!),
+            build: (data) => TramPage(vehicle: data!),
+          ),
+        ),
         GoRoute(
           path: "/trams/create",
           builder: (context, state) => TramEditPage(),
         ),
-
         GoRoute(
           path: '/trams/:id/edit',
           builder: (context, state) => FutureRoute(
@@ -89,6 +103,13 @@ final transportiaRouter = GoRouter(
         GoRoute(
           path: "/tram-operators/create",
           builder: (context, state) => TramOperatorEditPage(),
+        ),
+        GoRoute(
+          path: '/tram-operator/:id',
+          builder: (context, state) => FutureRoute(
+            details: () => getTramOperator(state.pathParameters['id']!),
+            build: (data) => TramOperatorPage(operator: data!),
+          ),
         ),
         GoRoute(
           path: '/photos',
@@ -123,6 +144,18 @@ final transportiaRouter = GoRouter(
               author: data.author,
             ),
           ),
+        ),
+        GoRoute(
+          path: '/tram-photos',
+          builder: (context, state) {
+            return TramPhotoSearchPage();
+          },
+        ),
+        GoRoute(
+          path: '/tram-announcements',
+          builder: (context, state) {
+            return TramAnnouncementAudios();
+          },
         ),
         GoRoute(
           path: '/user/:id',
@@ -206,7 +239,22 @@ final transportiaRouter = GoRouter(
         ),
         GoRoute(
           path: '/model-buses',
-          builder: (context, state) => ModelBusSearchPage(),
+          builder: (context, state) => ModelBusSearchPage(isOwnerships: false),
+        ),
+        GoRoute(
+          path: '/model-bus/:id',
+          builder: (context, state) => FutureRoute(
+            details: () => getModelBus(state.pathParameters['id']!),
+            build: (data) => ModelBusPage(modelBuss: data!),
+          ),
+        ),
+        GoRoute(
+          path: '/model-bus-photos',
+          builder: (context, state) => ModelBusPhotoSearchPage(),
+        ),
+        GoRoute(
+          path: '/my-model-buses',
+          builder: (context, state) => ModelBusSearchPage(isOwnerships: true),
         ),
         GoRoute(
           path: '/model-buses/create',

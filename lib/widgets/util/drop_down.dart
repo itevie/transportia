@@ -1,20 +1,34 @@
 import 'package:flutter/material.dart';
 
+class TDropDownItem {
+  final String label;
+  final VoidCallback callback;
+  final IconData? icon;
+  final bool isDanger;
+
+  TDropDownItem({
+    required this.label,
+    required this.callback,
+    this.icon,
+    this.isDanger = false,
+  });
+}
+
 class TDropDownMenu extends StatefulWidget {
-  final Widget child;
-  final Map<String, VoidCallback> options;
-  final Future<Map<String, VoidCallback>> Function()? loadOptions;
+  final List<TDropDownItem> options;
+  final Future<List<TDropDownItem>> Function()? loadOptions;
   final double mobileBreakpoint;
   final bool showOnSecondaryClick;
   final VoidCallback? onTap;
+  final Widget child;
 
   const TDropDownMenu({
     super.key,
-    required this.child,
     required this.options,
     this.loadOptions,
     this.mobileBreakpoint = 600,
     this.showOnSecondaryClick = false,
+    required this.child,
     this.onTap,
   });
 
@@ -25,7 +39,7 @@ class TDropDownMenu extends StatefulWidget {
 class _TDropDownMenuState extends State<TDropDownMenu> {
   bool _isLoading = false;
 
-  Future<Map<String, VoidCallback>?> _getOptions() async {
+  Future<List<TDropDownItem>?> _getOptions() async {
     if (_isLoading) return null;
 
     if (widget.loadOptions == null) {
@@ -64,7 +78,7 @@ class _TDropDownMenuState extends State<TDropDownMenu> {
 
     if (options.isEmpty) return;
 
-    final selected = await showMenu<String>(
+    final selected = await showMenu<int>(
       context: context,
       position: RelativeRect.fromLTRB(
         position.dx,
@@ -72,13 +86,41 @@ class _TDropDownMenuState extends State<TDropDownMenu> {
         MediaQuery.sizeOf(context).width - position.dx,
         MediaQuery.sizeOf(context).height - position.dy,
       ),
-      items: options.keys
-          .map((name) => PopupMenuItem<String>(value: name, child: Text(name)))
+      items: options
+          .asMap()
+          .entries
+          .map(
+            (item) => PopupMenuItem<int>(
+              value: item.key,
+              child: item.value.icon == null
+                  ? Text(
+                      item.value.label,
+                      style: item.value.isDanger
+                          ? TextStyle(color: Colors.red)
+                          : null,
+                    )
+                  : Row(
+                      children: [
+                        Icon(
+                          item.value.icon,
+                          color: item.value.isDanger ? Colors.red : null,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          item.value.label,
+                          style: item.value.isDanger
+                              ? TextStyle(color: Colors.red)
+                              : null,
+                        ),
+                      ],
+                    ),
+            ),
+          )
           .toList(),
     );
 
     if (selected != null) {
-      options[selected]?.call();
+      options[selected].callback.call();
     }
   }
 
@@ -102,12 +144,15 @@ class _TDropDownMenuState extends State<TDropDownMenu> {
           child: ListView(
             shrinkWrap: true,
             padding: const EdgeInsets.only(bottom: 8),
-            children: options.entries.map((entry) {
+            children: options.map((entry) {
               return ListTile(
-                title: Text(entry.key),
+                title: Text(
+                  entry.label,
+                  style: entry.isDanger ? TextStyle(color: Colors.red) : null,
+                ),
                 onTap: () {
                   Navigator.pop(context);
-                  entry.value();
+                  entry.callback();
                 },
               );
             }).toList(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_vehicle.dart';
+import 'package:transportia/cm/cm_base.dart';
 import 'package:transportia/cm/vehicle.dart';
 import 'package:transportia/util/vehicle_icons.dart';
 import 'package:transportia/widgets/util/seach_results_table.dart';
@@ -65,9 +66,7 @@ class VehicleListRows extends StatelessWidget {
                   )
                 : const SizedBox.shrink(),
             'Badges': Wrap(children: [...vehicleIcons(vehicle)]),
-            'Actions': Row(
-              children: [vehicleContextMenu(context, vehicle: vehicle)],
-            ),
+            'Actions': Row(children: [createCm(context, [], vehicle)]),
           },
           vehicle.withdrawn ? Colors.red.withValues(alpha: 0.25) : null,
         );

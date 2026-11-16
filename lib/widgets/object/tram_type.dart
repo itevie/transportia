@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:transportia/api/tram_type.dart';
-import 'package:transportia/cm/tram_type.dart';
+import 'package:transportia/cm/cm_base.dart';
 
 class TramTypeView extends StatelessWidget {
   final ApiTramType tramType;
@@ -19,12 +19,7 @@ class TramTypeView extends StatelessWidget {
     return Card(
       child: ListTile(
         title: Text(tramType.name),
-        trailing: tramTypeContextMenu(
-          context,
-          tramType: tramType,
-          isTool: isTool,
-          reload: reload,
-        ),
+        trailing: createCm(context, [], tramType, reload: reload),
       ),
     );
   }

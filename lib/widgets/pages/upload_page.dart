@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:transportia/api/filled_out_bus_photo.dart';
+import 'package:transportia/api/photo.dart';
+import 'package:transportia/prompts/photo_type.dart';
 import 'package:transportia/prompts/progress.dart';
 import 'package:transportia/stores/current_user_store.dart';
 import 'package:transportia/util/date.dart';
 import 'package:transportia/util/images.dart';
-import 'package:transportia/widgets/lists/bus_photos_list.dart';
+import 'package:transportia/widgets/lists/photo_list.dart';
 
 class UploadPage extends StatefulWidget {
   const UploadPage({super.key});
@@ -15,8 +16,8 @@ class UploadPage extends StatefulWidget {
 }
 
 class _UploadPageState extends State<UploadPage> {
-  List<ApiFilledOutPhotoBus> userPictures = [];
-  Map<String, List<ApiFilledOutPhotoBus>> mappedUserPictures = {};
+  List<ApiPhoto> userPictures = [];
+  Map<String, List<ApiPhoto>> mappedUserPictures = {};
 
   @override
   void initState() {
@@ -26,11 +27,11 @@ class _UploadPageState extends State<UploadPage> {
   }
 
   void load() async {
-    final userPictures = await ApiFilledOutPhotoBus.fetchAll(
+    final userPictures = await ApiPhoto.fetchAll(
       authorId: context.read<CurrentUserStore>().user!.id,
     );
 
-    final mapped = <String, List<ApiFilledOutPhotoBus>>{};
+    final mapped = <String, List<ApiPhoto>>{};
 
     for (final picture in userPictures) {
       final date = DateTime.parse(picture.createdAt);
@@ -54,12 +55,16 @@ class _UploadPageState extends State<UploadPage> {
   }
 
   void upload() async {
+    final photoType = await showPhotoTypePrompt(context: context);
+
+    if (photoType == null) return;
+
     final images = await pickImages();
 
     await showLoadingPrompt(
       context,
       (onProgress) =>
-          ApiFilledOutPhotoBus.upload(images, onProgress: onProgress),
+          ApiPhoto.upload(images, photoType, onProgress: onProgress),
       title: const Text("Uploading photos"),
       message: const Text("Please wait while your photos upload…"),
     );
@@ -91,7 +96,7 @@ class _UploadPageState extends State<UploadPage> {
             return ExpansionTile(
               title: Text("${formatIsoDate(x.key)} (${x.value.length} Photos)"),
               initiallyExpanded: x.key == mappedUserPictures.entries.first.key,
-              children: [BusPhotoList(photos: x.value)],
+              children: [PhotoList(photos: x.value)],
             );
           }),
         ],

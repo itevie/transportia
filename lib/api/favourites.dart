@@ -108,9 +108,6 @@ enum FavouriteType {
 
   const FavouriteType(this.value, this.apiValue);
 
-  // static FavouriteType fromJson(int value) {
-  //   return FavouriteType.values.firstWhere((type) => type.value == value);
-  // }
   static FavouriteType fromJson(String value) {
     return FavouriteType.values.firstWhere((type) => type.apiValue == value);
   }

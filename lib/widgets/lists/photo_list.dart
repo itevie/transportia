@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:transportia/api/filled_out_bus_photo.dart';
-import 'package:transportia/widgets/object/bus_photo_image_card.dart';
+import 'package:transportia/api/photo.dart';
+import 'package:transportia/widgets/object/photo_image_card.dart';
 
-class BusPhotoList extends StatelessWidget {
-  final List<ApiFilledOutPhotoBus> photos;
+class PhotoList extends StatelessWidget {
+  final List<ApiPhoto> photos;
 
-  const BusPhotoList({super.key, required this.photos});
+  const PhotoList({super.key, required this.photos});
 
   @override
   Widget build(BuildContext context) {

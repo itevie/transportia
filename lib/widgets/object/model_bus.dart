@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/model_bus.dart';
+import 'package:transportia/api/model_bus_ownership.dart';
+import 'package:transportia/cm/cm_base.dart';
 import 'package:transportia/cm/model_bus.dart';
 import 'package:transportia/util/text.dart';
+import 'package:transportia/util/util.dart';
+import 'package:transportia/widgets/livery/livery.dart';
+import 'package:transportia/widgets/util/no_photo.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 
 class ModelBusCard extends StatefulWidget {
   final ApiModelBus model;
+  final ApiModelBusOwnership? ownership;
   final bool dummy;
 
-  const ModelBusCard({super.key, required this.model, this.dummy = false});
+  const ModelBusCard({
+    super.key,
+    required this.model,
+    this.ownership,
+    this.dummy = false,
+  });
 
   @override
   State<ModelBusCard> createState() => _ModelBusCardState();
@@ -47,6 +58,20 @@ class _ModelBusCardState extends State<ModelBusCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(label, color: Colors.grey, size: 16),
+          const SizedBox(width: 4),
+          Expanded(child: value),
+        ],
+      ),
+    );
+  }
+
+  Widget _detail2(Widget label, Widget value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          label,
           const SizedBox(width: 4),
           Expanded(child: value),
         ],
@@ -93,8 +118,10 @@ class _ModelBusCardState extends State<ModelBusCard> {
     var livery = oneOf([model.liveryObj?.name, model.livery]);
     if (livery != null) {
       vehicleDetails.add(
-        _detail(
-          Icons.palette,
+        _detail2(
+          isLinux() || model.liveryObj == null
+              ? Icon(Icons.palette, color: Colors.grey, size: 16)
+              : LiveryView(livery: model.liveryObj!, size: 16),
           _linkedText(
             text: livery,
             id: model.liveryLink.toString(),
@@ -173,33 +200,39 @@ class _ModelBusCardState extends State<ModelBusCard> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.directions_bus, size: 40),
-                        SizedBox(height: 4),
-                        Text('No Photo'),
-                      ],
-                    ),
+                    child:
+                        widget.model.photo == null &&
+                            widget.ownership?.photo == null
+                        ? noPhoto()
+                        : Image.network(
+                            (widget.ownership?.photo ?? widget.model.photo)!
+                                .withSize(150),
+                            fit: BoxFit.cover,
+                          ),
                   ),
 
                   if (!widget.dummy)
                     Positioned(
                       top: 4,
                       right: 4,
-                      child: modelBusContextMenu(
-                        context,
-                        modelBus: widget.model,
-                        isTool: true,
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.more_vert),
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.black54,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
+                      child: createCm(context, [
+                        CmContext.hasPhoto,
+                      ], widget.model),
+                      // TODO: Make it work with ownership
+                      // modelBusContextMenu(
+                      //   context,
+                      //   modelBus: widget.model,
+                      //   isTool: true,
+                      //   ownership: widget.ownership,
+                      //   child: IconButton(
+                      //     onPressed: () {},
+                      //     icon: const Icon(Icons.more_vert),
+                      //     style: IconButton.styleFrom(
+                      //       backgroundColor: Colors.black54,
+                      //       foregroundColor: Colors.white,
+                      //     ),
+                      //   ),
+                      // ),
                     ),
                 ],
               ),

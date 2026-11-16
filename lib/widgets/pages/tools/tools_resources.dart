@@ -55,6 +55,21 @@ class ToolResourcesPage extends StatelessWidget {
               ],
             ),
           ),
+          SubText("Tram Routes"),
+          PageChangeCard(
+            onTap: () {
+              context.go("/tools/resources/tram-operators");
+            },
+            icon: Icons.tram,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Tram Stops"),
+                SubText("Define all the stops trams use."),
+              ],
+            ),
+          ),
         ],
       ),
     );

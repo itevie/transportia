@@ -29,6 +29,8 @@ class ApiBtVehicle {
   final bool demonstrator;
   final bool openTop;
 
+  String get displayName => "$fleet - $reg";
+
   ApiBtVehicle({
     required this.id,
     required this.slug,

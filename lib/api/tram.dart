@@ -1,4 +1,5 @@
 import 'package:transportia/api/api.dart';
+import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tram_livery.dart';
 import 'package:transportia/api/tram_type.dart';
 import 'package:transportia/api/tram_operator.dart';
@@ -17,7 +18,10 @@ class ApiTram {
   final bool withdrawn;
   final String? name;
   final String? branding;
+  final ApiPhoto? photo;
   final bool? isFavourited;
+
+  String get displayName => "$fleet - ${tramType?.name}";
 
   ApiTram({
     required this.id,
@@ -33,10 +37,10 @@ class ApiTram {
     this.name,
     this.branding,
     this.isFavourited,
+    this.photo,
   });
 
   factory ApiTram.fromJson(Map<String, dynamic> json) {
-    print(json);
     return ApiTram(
       id: json["id"],
       operatorId: json["operator_id"],
@@ -56,6 +60,7 @@ class ApiTram {
       withdrawn: json["withdrawn"] == true || json["withdrawn"] == 1,
       name: json["name"],
       branding: json["branding"],
+      photo: json["photo"] == null ? null : ApiPhoto.fromJson(json["photo"]),
       isFavourited: json["is_favourited"],
     );
   }

@@ -3,9 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_livery.dart';
 import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/bt_vehicle_type.dart';
+import 'package:transportia/api/bus_listing.dart';
 import 'package:transportia/api/filled_out_bus_photo.dart';
 import 'package:transportia/api/model_bus.dart';
+import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tram.dart';
+import 'package:transportia/api/tram_operator.dart';
 import 'package:transportia/api/tx_operator.dart';
 import 'package:transportia/api/user.dart';
 
@@ -92,6 +95,10 @@ Future<ApiTram?> getTram(String id) async {
   return ApiTram.get(int.parse(id));
 }
 
+Future<ApiTramOperator?> getTramOperator(String id) async {
+  return ApiTramOperator.get(int.parse(id));
+}
+
 Future<ApiUser?> getUser(String id) async {
   return ApiUser.get(int.parse(id));
 }
@@ -100,14 +107,18 @@ Future<ApiModelBus?> getModelBus(String id) async {
   return ApiModelBus.get(int.parse(id));
 }
 
+// Future<ApiModelBus?> getModelBusListing(String id) async {
+//   return ApiBusListingResource.(int.parse(id));
+// }
+
 Future<ApiUser?> getOptionalUser(String? id) async {
   if (id == null || int.tryParse(id) == null) return null;
 
   return ApiUser.get(int.parse(id));
 }
 
-Future<ApiFilledOutPhotoBus?> getBusPhoto(String id) async {
-  return ApiFilledOutPhotoBus.fetch(int.parse(id));
+Future<ApiPhoto?> getBusPhoto(String id) async {
+  return ApiPhoto.fetch(int.parse(id));
 }
 
 Future<ApiBtLivery?> getOptionalLivery(String? id) async {

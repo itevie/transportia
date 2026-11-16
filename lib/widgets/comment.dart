@@ -115,19 +115,21 @@ class _CommentWidgetState extends State<CommentWidget> {
                           ],
                         ),
                       ),
+                      // TODO: Add this back
                       if (user.loggedIn)
-                        TDropDownMenu(
-                          options: {
-                            "Edit": () {},
-                            "Delete": () {
-                              if (widget.onDelete != null) widget.onDelete!();
-                            },
-                          },
-                          child: IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.more_vert),
-                          ),
+                        // TDropDownMenu(
+                        //   options: {
+                        //     "Edit": () {},
+                        //     "Delete": () {
+                        //       if (widget.onDelete != null) widget.onDelete!();
+                        //     },
+                        //   },
+                        //   child:
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(Icons.more_vert),
                         ),
+                      // ),
                     ],
                   ),
                 ],

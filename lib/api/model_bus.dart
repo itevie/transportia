@@ -2,6 +2,7 @@ import 'package:transportia/api/api.dart';
 import 'package:transportia/api/bt_livery.dart';
 import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/bt_vehicle_type.dart';
+import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tx_line.dart';
 import 'package:transportia/api/tx_operator.dart';
 import 'package:transportia/constants.dart';
@@ -40,8 +41,26 @@ class ApiModelBus {
 
   final String? released;
 
+  final ApiPhoto? photo;
+
   final String createdAt;
   final String updatedAt;
+
+  String get displayName => "$manufacturer $productCode";
+
+  String? get dOperator => operatorObj?.displayName ?? operator;
+
+  String? get dLivery => liveryObj?.name ?? livery;
+
+  String? get dFleet => fleetNumber;
+
+  String? get dReg => registration;
+
+  String? get dRoute => routeObj?.name ?? routeNumber;
+
+  String? get dDestination => routeObj?.displayName ?? destination;
+
+  String? get dVehicleType => vehicleTypeObj?.name ?? vehicleType;
 
   ApiModelBus({
     required this.id,
@@ -70,6 +89,7 @@ class ApiModelBus {
     this.released,
     required this.createdAt,
     required this.updatedAt,
+    this.photo,
   });
 
   factory ApiModelBus.fromJson(Map<String, dynamic> json) {
@@ -116,6 +136,8 @@ class ApiModelBus {
       certificateMax: json["certificate_max"] ?? 0,
 
       released: json["released"],
+
+      photo: json["photo"] == null ? null : ApiPhoto.fromJson(json["photo"]),
 
       createdAt: json["created_at"],
       updatedAt: json["updated_at"],
@@ -237,6 +259,14 @@ class ApiModelBus {
     }
 
     return ApiModelBus.fromJson(data);
+  }
+
+  static Future<List<ApiModelBus>> searchPotentialMatchesForVehicle(
+    String search,
+  ) async {
+    final data = await Api().get("/model-buses/possible-matches/$search");
+
+    return (data as List).map((json) => ApiModelBus.fromJson(json)).toList();
   }
 
   static Future<int> create({

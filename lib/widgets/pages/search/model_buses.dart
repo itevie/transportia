@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_livery.dart';
 import 'package:transportia/api/bt_vehicle_type.dart';
 import 'package:transportia/api/model_bus.dart';
+import 'package:transportia/api/model_bus_ownership.dart';
 import 'package:transportia/api/tx_operator.dart';
 import 'package:transportia/prompts/livery_search.dart';
 import 'package:transportia/prompts/model_bus_manufacturer.dart';
@@ -15,7 +16,8 @@ import 'package:transportia/widgets/lists/model_bus_rows.dart';
 import 'package:transportia/widgets/util/search_page.dart';
 
 class ModelBusSearchPage extends StatefulWidget {
-  const ModelBusSearchPage({super.key});
+  final bool isOwnerships;
+  const ModelBusSearchPage({super.key, required this.isOwnerships});
 
   @override
   State<ModelBusSearchPage> createState() => _ModelBusSearchPageState();
@@ -23,6 +25,9 @@ class ModelBusSearchPage extends StatefulWidget {
 
 class _ModelBusSearchPageState extends State<ModelBusSearchPage> {
   List<ApiModelBus> models = [];
+  List<ApiModelBusOwnership> modelOwnerships = [];
+
+  String? query;
 
   int currentOffset = 0;
   ApiTxOperator? operator;
@@ -40,11 +45,33 @@ class _ModelBusSearchPageState extends State<ModelBusSearchPage> {
     load();
   }
 
-  void load({String? query}) async {
-    final loadedTrams = await ApiModelBus.search(search: query);
+  void load() async {
+    if (widget.isOwnerships) {
+      loadModelOwnerships();
+    } else {
+      loadModels();
+    }
+  }
+
+  void loadModels() async {
+    final loadedModels = await ApiModelBus.search(
+      search: query,
+      operatorLink: operator?.code,
+      vehicleTypeLink: vehicleType?.id,
+      liveryLink: livery?.id,
+      manufacturer: manufacturer,
+    );
 
     setState(() {
-      models = loadedTrams;
+      models = loadedModels;
+    });
+  }
+
+  void loadModelOwnerships() async {
+    final loadedModels = await ApiModelBusOwnership.search(search: query);
+
+    setState(() {
+      modelOwnerships = loadedModels;
     });
   }
 
@@ -56,7 +83,11 @@ class _ModelBusSearchPageState extends State<ModelBusSearchPage> {
     return SearchPage(
       searchHint: "Search model buses..",
       onSearch: (v) {
-        load(query: v);
+        setState(() {
+          query = v;
+        });
+
+        addPostLoad();
       },
       filters: [
         InputSelectionField<String>(
@@ -137,7 +168,14 @@ class _ModelBusSearchPageState extends State<ModelBusSearchPage> {
         context.go("/model-buses/create");
       },
       results: () => Expanded(
-        child: SingleChildScrollView(child: ModelBusList(modelBuses: models)),
+        child: SingleChildScrollView(
+          child: ModelBusList(
+            modelBuses: widget.isOwnerships
+                ? modelOwnerships.map((x) => x.modelBus!).toList()
+                : models,
+            ownerships: modelOwnerships,
+          ),
+        ),
       ),
       resultsTable: () => Expanded(child: ModelBusListRows(vehicles: models)),
     );

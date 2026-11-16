@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/big_search.dart';
+import 'package:transportia/cm/cm_base.dart';
 import 'package:transportia/cm/service.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/util/icons.dart';
@@ -121,126 +122,151 @@ class _AllSearchPageState extends State<AllSearchPage> {
         Expanded(
           child: AppTabController(
             tabs: [
-              AppTab(
-                name: "Users (${_results?.users.length ?? 0})",
-                icon: Icons.person,
-                child: ListView.builder(
-                  itemCount: _results?.users.length ?? 0,
-                  itemBuilder: (context, index) {
-                    final user = _results!.users[index];
-
-                    return ListTile(
-                      leading: ProfilePicture(
-                        usage: ProfilePictureUsage.nextToName,
-                      ),
-                      title: Text(user.username),
-                      onTap: () {
-                        context.go("/users/${user.id}");
-                        // setAppPage(UserViewer(user: user));
-                      },
-                    );
-                  },
+              if (![
+                _results?.users.isNotEmpty,
+                _results?.operators.isNotEmpty,
+                _results?.vehicleTypes.isNotEmpty,
+                _results?.routes.isNotEmpty,
+                _results?.liveries.isNotEmpty,
+              ].any((x) => x != null && x == true))
+                AppTab(
+                  id: "none",
+                  name: "Search",
+                  icon: Icons.search,
+                  child: Center(
+                    child: Text("No results, type to get some results!"),
+                  ),
                 ),
-              ),
-              AppTab(
-                name: "Operators (${_results?.operators.length ?? 0})",
-                icon: Icons.business,
-                child: ListView.builder(
-                  itemCount: _results?.operators.length ?? 0,
-                  itemBuilder: (context, index) {
-                    final operator = _results!.operators[index];
-
-                    return ListTile(
-                      title: Text(operator.displayName),
-                      onTap: () {
-                        context.go("/operators/${operator.id}");
-                        // setAppPage(OperatorPage(operator: operator));
-                      },
-                    );
-                  },
-                ),
-              ),
-              AppTab(
-                name: "Routes (${_results?.routes.length ?? 0})",
-                icon: Icons.route,
-                child: Padding(
-                  padding: EdgeInsetsGeometry.all(8),
+              if (_results?.users.isNotEmpty ?? false)
+                AppTab(
+                  id: "users",
+                  name: "Users (${_results?.users.length ?? 0})",
+                  icon: Icons.person,
                   child: ListView.builder(
-                    itemCount: _results?.routes.length ?? 0,
+                    itemCount: _results?.users.length ?? 0,
                     itemBuilder: (context, index) {
-                      final route = _results!.routes[index];
+                      final user = _results!.users[index];
 
-                      return Row(
-                        children: [
-                          ServiceNumber(
-                            lineName: route.name,
-                            operator: route.operatorNationalCode,
-                          ),
-
-                          const SizedBox(width: 8),
-
-                          Expanded(
-                            child: Text(
-                              route.displayName,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-
-                          serviceContextMenu(context, service: route),
-                        ],
+                      return ListTile(
+                        leading: ProfilePicture(
+                          usage: ProfilePictureUsage.nextToName,
+                        ),
+                        title: Text(user.username),
+                        onTap: () {
+                          context.go("/users/${user.id}");
+                          // setAppPage(UserViewer(user: user));
+                        },
                       );
                     },
                   ),
                 ),
-              ),
-              AppTab(
-                name: "Vehicle Types (${_results?.vehicleTypes.length ?? 0})",
-                icon: Icons.directions_bus,
-                child: ListView.builder(
-                  itemCount: _results?.vehicleTypes.length ?? 0,
-                  itemBuilder: (context, index) {
-                    final vehicleType = _results!.vehicleTypes[index];
+              if (_results?.operators.isNotEmpty ?? false)
+                AppTab(
+                  id: "operators",
+                  name: "Operators (${_results?.operators.length ?? 0})",
+                  icon: Icons.business,
+                  child: ListView.builder(
+                    itemCount: _results?.operators.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final operator = _results!.operators[index];
 
-                    return ListTile(
-                      title: Text(vehicleType.name),
-                      onTap: () {
-                        context.go("/vehicles?vt=${vehicleType.id}");
-                      },
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (vehicleType.electric) electricVehicleIcon(),
-                          if (vehicleType.doubleDecker)
-                            doubleDeckerVehicleIcon(),
-                          if (vehicleType.coach) coachVehicleIcon(),
-                        ],
-                      ),
-                    );
-                  },
+                      return ListTile(
+                        title: Text(operator.displayName),
+                        onTap: () {
+                          context.go("/operator/${operator.id}");
+                          // setAppPage(OperatorPage(operator: operator));
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
-              AppTab(
-                name: "Liveries (${_results?.liveries.length ?? 0})",
-                icon: Icons.palette,
-                child: ListView.builder(
-                  itemCount: _results?.liveries.length ?? 0,
-                  itemBuilder: (context, index) {
-                    final livery = _results!.liveries[index];
+              if (_results?.routes.isNotEmpty ?? false)
+                AppTab(
+                  id: "routes",
+                  name: "Routes (${_results?.routes.length ?? 0})",
+                  icon: Icons.route,
+                  child: Padding(
+                    padding: EdgeInsetsGeometry.all(8),
+                    child: ListView.builder(
+                      itemCount: _results?.routes.length ?? 0,
+                      itemBuilder: (context, index) {
+                        final route = _results!.routes[index];
 
-                    return ListTile(
-                      leading: LiveryView(
-                        livery: livery,
-                        key: Key(livery.id.toString()),
-                      ),
-                      title: Text(livery.name),
+                        return Row(
+                          children: [
+                            ServiceNumber(
+                              lineName: route.name,
+                              operator: route.operatorNationalCode,
+                            ),
 
-                      onTap: () {
-                        context.go("/vehicles?livery=${livery.id}");
+                            const SizedBox(width: 8),
+
+                            Expanded(
+                              child: Text(
+                                route.displayName,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+
+                            createCm(context, [CmContext.objService], route),
+                          ],
+                        );
                       },
-                    );
-                  },
+                    ),
+                  ),
                 ),
-              ),
+              if (_results?.vehicleTypes.isNotEmpty ?? false)
+                AppTab(
+                  id: "vehicles",
+                  name: "Vehicle Types (${_results?.vehicleTypes.length ?? 0})",
+                  icon: Icons.directions_bus,
+                  child: ListView.builder(
+                    itemCount: _results?.vehicleTypes.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final vehicleType = _results!.vehicleTypes[index];
+
+                      return ListTile(
+                        title: Text(vehicleType.name),
+                        onTap: () {
+                          context.go("/vehicles?vt=${vehicleType.id}");
+                        },
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (vehicleType.electric) electricVehicleIcon(),
+                            if (vehicleType.doubleDecker)
+                              doubleDeckerVehicleIcon(),
+                            if (vehicleType.coach) coachVehicleIcon(),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              if (_results?.liveries.isNotEmpty ?? false)
+                AppTab(
+                  id: "liveries",
+                  name: "Liveries (${_results?.liveries.length ?? 0})",
+                  icon: Icons.palette,
+                  child: ListView.builder(
+                    itemCount: _results?.liveries.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final livery = _results!.liveries[index];
+
+                      return ListTile(
+                        leading: LiveryView(
+                          livery: livery,
+                          key: Key(livery.id.toString()),
+                        ),
+                        title: Text(livery.name),
+
+                        onTap: () {
+                          context.go("/vehicles?livery=${livery.id}");
+                        },
+                      );
+                    },
+                  ),
+                ),
             ],
           ),
         ),

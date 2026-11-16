@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:transportia/api/model_bus.dart';
+import 'package:transportia/api/model_bus_ownership.dart';
 import 'package:transportia/widgets/object/model_bus.dart';
 
 class ModelBusList extends StatelessWidget {
   final List<ApiModelBus> modelBuses;
+  final List<ApiModelBusOwnership>? ownerships;
   final VoidCallback? reload;
 
-  const ModelBusList({super.key, required this.modelBuses, this.reload});
+  const ModelBusList({
+    super.key,
+    required this.modelBuses,
+    this.ownerships,
+    this.reload,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +30,9 @@ class ModelBusList extends StatelessWidget {
       itemCount: modelBuses.length,
       itemBuilder: (context, index) {
         final model = modelBuses[index];
+        final ownership = ownerships?.where((x) => x.modelBusId == model.id);
 
-        return ModelBusCard(model: model);
+        return ModelBusCard(model: model, ownership: ownership?.firstOrNull);
       },
     );
   }

@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_livery.dart';
 import 'package:transportia/api/bt_vehicle.dart';
+import 'package:transportia/api/bus_photo_details.dart';
 import 'package:transportia/api/comment.dart';
+import 'package:transportia/api/photo.dart';
+import 'package:transportia/api/tram_photo_details.dart';
 import 'package:transportia/api/tx_line.dart';
 import 'package:transportia/api/tx_operator.dart';
+import 'package:transportia/widgets/lists/photo_list.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/comment_thread.dart';
@@ -26,6 +30,7 @@ class _OperatorPageState extends State<OperatorPage> {
   List<ApiBtLivery> liveries = [];
   Map<String, List<ApiBtVehicle>> vehiclesMapped = {};
   List<ApiComment> comments = [];
+  List<ApiPhoto> photos = [];
 
   @override
   void initState() {
@@ -43,6 +48,10 @@ class _OperatorPageState extends State<OperatorPage> {
     final loadedVehicles = await ApiBtVehicle.search(
       operatorId: widget.operator.nationalCode,
       pageLength: 1000,
+    );
+
+    final photos = await ApiBusPhotoDetails.fetchAll(
+      bdOperatorId: widget.operator.nationalCode,
     );
 
     Map<String, List<ApiBtVehicle>> mapped = {};
@@ -65,6 +74,7 @@ class _OperatorPageState extends State<OperatorPage> {
       vehicles = loadedVehicles;
       vehiclesMapped = mapped;
       this.liveries = liveries;
+      this.photos = photos;
     });
   }
 
@@ -91,6 +101,7 @@ class _OperatorPageState extends State<OperatorPage> {
           child: AppTabController(
             tabs: [
               AppTab(
+                id: "routes",
                 name: "Routes (${lines.length})",
                 icon: Icons.route,
                 child: ListView(
@@ -119,6 +130,7 @@ class _OperatorPageState extends State<OperatorPage> {
                 ),
               ),
               AppTab(
+                id: "vehicles",
                 name: "Vehicles (${vehicles.length})",
                 icon: Icons.directions_bus,
                 child: ListView(
@@ -139,14 +151,14 @@ class _OperatorPageState extends State<OperatorPage> {
                                 children: [
                                   Row(
                                     children: [
+                                      Text("${vehicle.reg} - ${vehicle.fleet}"),
                                       if (vehicle.withdrawn) ...[
+                                        const SizedBox(width: 8),
                                         Text(
                                           "Withdrawn",
                                           style: TextStyle(color: Colors.red),
                                         ),
-                                        const SizedBox(width: 8),
                                       ],
-                                      Text("${vehicle.reg} - ${vehicle.fleet}"),
                                     ],
                                   ),
                                   if (vehicle.livery != null)
@@ -162,6 +174,7 @@ class _OperatorPageState extends State<OperatorPage> {
                 ),
               ),
               AppTab(
+                id: "liveries",
                 name: "Liveries (${liveries.length})",
                 icon: Icons.palette,
                 child: ListView(
@@ -191,6 +204,7 @@ class _OperatorPageState extends State<OperatorPage> {
               ),
               if (widget.operator.commentThread != null)
                 AppTab(
+                  id: "comments",
                   name: "Comments (${comments.length})",
                   icon: Icons.comment,
                   child: Padding(
@@ -204,6 +218,12 @@ class _OperatorPageState extends State<OperatorPage> {
                     ),
                   ),
                 ),
+              AppTab(
+                id: "photos",
+                name: "Photos (${photos.length})",
+                icon: Icons.camera,
+                child: SingleChildScrollView(child: PhotoList(photos: photos)),
+              ),
             ],
           ),
         ),

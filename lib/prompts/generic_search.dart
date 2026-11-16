@@ -9,6 +9,7 @@ Future<T?> showSearchPrompt<T>({
   String title = "Search",
   String hintText = "Search...",
   bool showSearch = true,
+  bool preSearch = false,
 }) async {
   return showDialog<T>(
     context: context,
@@ -19,6 +20,7 @@ Future<T?> showSearchPrompt<T>({
         title: title,
         hintText: hintText,
         showSearch: showSearch,
+        preSearch: preSearch,
       );
     },
   );
@@ -30,6 +32,7 @@ class _SearchPrompt<T> extends StatefulWidget {
   final String title;
   final String hintText;
   final bool showSearch;
+  final bool preSearch;
 
   const _SearchPrompt({
     required this.search,
@@ -37,6 +40,7 @@ class _SearchPrompt<T> extends StatefulWidget {
     required this.title,
     required this.hintText,
     required this.showSearch,
+    required this.preSearch,
   });
 
   @override
@@ -55,7 +59,7 @@ class _SearchPromptState<T> extends State<_SearchPrompt<T>> {
   void initState() {
     super.initState();
 
-    if (widget.showSearch == false) load();
+    if (widget.showSearch == false || widget.preSearch) load();
   }
 
   void _onSearchChanged(String query) {

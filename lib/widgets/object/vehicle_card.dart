@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_vehicle.dart';
+import 'package:transportia/cm/cm_base.dart';
 import 'package:transportia/cm/vehicle.dart';
+import 'package:transportia/widgets/util/object_labels.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/util/vehicle_icons.dart';
 import 'package:transportia/widgets/util/withdrawn.dart';
@@ -57,18 +59,21 @@ class _VehicleCardState extends State<VehicleCard> {
                     Positioned(
                       top: 4,
                       right: 4,
-                      child: vehicleContextMenu(
-                        context,
-                        vehicle: widget.vehicle,
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.more_vert),
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.black54,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
+                      child: createCm(context, [
+                        CmContext.hasPhoto,
+                      ], widget.vehicle),
+                      //  vehicleContextMenu(
+                      //   context,
+                      //   vehicle: widget.vehicle,
+                      //   child: IconButton(
+                      //     onPressed: () {},
+                      //     icon: const Icon(Icons.more_vert),
+                      //     style: IconButton.styleFrom(
+                      //       backgroundColor: Colors.black54,
+                      //       foregroundColor: Colors.white,
+                      //     ),
+                      //   ),
+                      // ),
                     ),
                 ],
               ),
@@ -100,40 +105,22 @@ class _VehicleCardState extends State<VehicleCard> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   if (widget.vehicle.operator != null)
-                    InkWell(
-                      onTap: widget.dummy
-                          ? null
-                          : () {
-                              context.push(
-                                "/operators?id=${widget.vehicle.operator!.id}",
-                              );
-                              // setAppPage(
-                              //   OperatorPage(operator: widget.vehicle.operator!),
-                              // );
-                            },
-                      child: SubText(widget.vehicle.operator!.shortName),
+                    OperatorLabel(
+                      operator: widget.vehicle.operator!,
+                      dummy: widget.dummy,
                     ),
+
                   if (widget.vehicle.livery != null)
-                    SubText(widget.vehicle.livery!.name),
+                    LiveryLabel(
+                      livery: widget.vehicle.livery!,
+                      dummy: widget.dummy,
+                    ),
                   if (widget.vehicle.vehicleType != null)
                     Align(
                       alignment: Alignment.center,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (widget.vehicle.livery != null) ...[
-                            Tooltip(
-                              message: widget.vehicle.livery!.name,
-                              child: LiveryView(
-                                livery: widget.vehicle.livery!,
-                                size: 32,
-                                key: Key(widget.vehicle.id.toString()),
-                              ),
-                            ),
-                            Spacer(),
-                          ],
-                          ...vehicleIcons(widget.vehicle),
-                        ],
+                        children: [Spacer(), ...vehicleIcons(widget.vehicle)],
                       ),
                     ),
                 ],

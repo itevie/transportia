@@ -1,4 +1,5 @@
 import 'package:transportia/api/api.dart';
+import 'package:transportia/api/model_bus.dart';
 
 class ApiBusListingResource {
   final int id;
@@ -92,6 +93,18 @@ class ApiBusListingResource {
       soldOut: json["sold_out"],
       someSoldOut: json["some_sold_out"],
     );
+  }
+
+  static Future<List<ApiBusListingResource>> fetchPossibleModelBusMatches(
+    ApiModelBus model,
+  ) async {
+    final data = await Api().get(
+      "/listings/potential-matches/${model.productCode}",
+    );
+
+    return (data as List)
+        .map((json) => ApiBusListingResource.fromJson(json))
+        .toList();
   }
 
   static Future<List<ApiBusListingResource>> fetchAll({

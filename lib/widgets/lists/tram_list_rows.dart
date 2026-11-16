@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/tram.dart';
+import 'package:transportia/cm/cm_base.dart';
 import 'package:transportia/cm/tram.dart';
 import 'package:transportia/widgets/util/seach_results_table.dart';
 
@@ -58,16 +59,7 @@ class TramListRow extends StatelessWidget {
             //       )
             //     : const SizedBox.shrink(),
             // 'Badges': Wrap(children: [...vehicleIcons(vehicle)]),
-            'Actions': Row(
-              children: [
-                tramContextMenu(
-                  context,
-                  tram: vehicle,
-                  reload: reload,
-                  isTool: true,
-                ),
-              ],
-            ),
+            'Actions': Row(children: [createCm(context, [], vehicle)]),
           },
           vehicle.withdrawn ? Colors.red.withValues(alpha: 0.25) : null,
         );

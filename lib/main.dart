@@ -124,7 +124,21 @@ class TransportiaShell extends StatelessWidget {
       "/trams",
       "/tools",
       '/model-bus-listings',
+      "/tram-photos",
+      "/tram-announcements",
+      '/my-model-buses',
+      "/model-bus-photos",
+      "/model-bus",
     ].contains(basePath);
+
+    Widget makeSideBar(IconData icon, String label, String goTo) {
+      return ListTile(
+        leading: Icon(icon),
+        title: Text(label),
+        selected: basePath == goTo,
+        onTap: () => _goTo(context, goTo),
+      );
+    }
 
     return Listener(
       onPointerDown: (event) {
@@ -204,54 +218,45 @@ class TransportiaShell extends StatelessWidget {
                         ),
                       ),
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.home),
-                      title: const Text('Home'),
-                      onTap: () => _goTo(context, '/'),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.forum),
-                      title: const Text('Forums'),
-                      onTap: () => _goTo(context, '/not-implemented'),
+                    makeSideBar(Icons.home, 'Home', '/'),
+                    makeSideBar(Icons.forum, 'Forum', '/not-implemented'),
+                    Divider(),
+                    makeSideBar(Icons.photo, 'Bus Photos', '/photos'),
+                    makeSideBar(
+                      Icons.directions_bus,
+                      'Vehicle Search',
+                      '/vehicles',
                     ),
                     Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.photo),
-                      title: const Text('Bus Photos'),
-                      onTap: () => _goTo(context, '/photos'),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.directions_bus),
-                      title: const Text('Bus Search'),
-                      onTap: () => _goTo(context, '/vehicles'),
+                    makeSideBar(Icons.tram, 'Tram Photos', '/tram-photos'),
+                    makeSideBar(Icons.tram, 'Tram Search', '/trams'),
+                    makeSideBar(
+                      Icons.campaign,
+                      'Tram Announcements',
+                      '/tram-announcements',
                     ),
                     Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.photo),
-                      title: const Text('Tram Photos'),
-                      onTap: () => _goTo(context, '/trams'),
+                    makeSideBar(
+                      Icons.directions_bus,
+                      'Model Bus Photos',
+                      '/model-bus-photos',
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.tram),
-                      title: const Text('Tram Search'),
-                      onTap: () => _goTo(context, '/trams'),
+                    makeSideBar(
+                      Icons.directions_bus,
+                      'Model Listings',
+                      '/model-bus-listings',
                     ),
-                    Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.directions_bus),
-                      title: const Text('Model Listings'),
-                      onTap: () => _goTo(context, '/model-bus-listings'),
+                    makeSideBar(
+                      Icons.directions_bus,
+                      'Model Directory',
+                      '/model-buses',
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.directions_bus),
-                      title: const Text('Model Directory'),
-                      onTap: () => _goTo(context, '/model-buses'),
-                    ),
+
                     if (user.loggedIn)
-                      ListTile(
-                        leading: const Icon(Icons.directions_bus),
-                        title: const Text('My Models'),
-                        onTap: () => _goTo(context, '/model-buses'),
+                      makeSideBar(
+                        Icons.directions_bus,
+                        'My Models',
+                        '/my-model-buses',
                       ),
                   ],
                 ),
@@ -261,16 +266,9 @@ class TransportiaShell extends StatelessWidget {
                   padding: EdgeInsetsGeometry.only(left: 16),
                   child: SubText("You"),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.route),
-                  title: const Text('Checklists'),
-                  onTap: () => _goTo(context, '/checklists'),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.favorite),
-                  title: const Text('Favourites'),
-                  onTap: () => _goTo(context, '/favourites'),
-                ),
+                makeSideBar(Icons.route, 'Checklists', '/checklists'),
+                makeSideBar(Icons.favorite, 'Favourites', '/favourites'),
+                makeSideBar(Icons.settings, 'Settings', '/settings'),
               ],
             ],
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/model_bus.dart';
+import 'package:transportia/cm/cm_base.dart';
 import 'package:transportia/cm/model_bus.dart';
 import 'package:transportia/widgets/util/seach_results_table.dart';
 
@@ -63,7 +64,8 @@ class ModelBusListRows extends StatelessWidget {
             'Released': Text(model.released?.toString() ?? ''),
             'Actions': Row(
               children: [
-                modelBusContextMenu(context, modelBus: model, isTool: true),
+                createCm(context, [], model),
+                // modelBusContextMenu(context, modelBus: model, isTool: true),
               ],
             ),
           },

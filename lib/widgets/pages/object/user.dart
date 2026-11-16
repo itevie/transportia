@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:transportia/api/filled_out_bus_photo.dart';
+import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/user.dart';
 import 'package:transportia/stores/current_user_store.dart';
 import 'package:transportia/widgets/pages/favourites_page.dart';
 import 'package:transportia/widgets/pages/not_implemented.dart';
 import 'package:transportia/widgets/util/icon_with_text.dart';
-import 'package:transportia/widgets/lists/bus_photos_list.dart';
+import 'package:transportia/widgets/lists/photo_list.dart';
 import 'package:transportia/widgets/profile_picture.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 
@@ -20,7 +21,7 @@ class UserViewer extends StatefulWidget {
 }
 
 class _UserViewerState extends State<UserViewer> {
-  List<ApiFilledOutPhotoBus> photos = [];
+  List<ApiPhoto> photos = [];
 
   String? bio =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque non eros in ligula consequat dignissim. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Curabitur rutrum condimentum lectus sit amet sollicitudin. Morbi condimentum consequat orci. Nam ultrices, eros id pulvinar ullamcorper, mauris nisl sollicitudin leo, a sodales nunc magna ut lacus. Praesent quis lectus ac orci eleifend ornare ultrices nec tortor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed suscipit arcu eget dui luctus congue. Nulla feugiat velit ut ante condimentum blandit ut at purus. Ut pulvinar erat at lacus hendrerit laoreet. Ut convallis sed metus et ultricies. Fusce vel tristique elit. Interdum et malesuada fames ac ante ipsum primis in faucibus. Etiam urna lacus, accumsan eu purus in, pellentesque blandit risus. Integer semper quis lorem id ullamcorper.";
@@ -61,9 +62,7 @@ class _UserViewerState extends State<UserViewer> {
   }
 
   void load() async {
-    final userPhotos = await ApiFilledOutPhotoBus.fetchAll(
-      authorId: widget.user.id,
-    );
+    final userPhotos = await ApiPhoto.fetchAll(authorId: widget.user.id);
 
     setState(() {
       photos = userPhotos;
@@ -244,18 +243,19 @@ class _UserViewerState extends State<UserViewer> {
           child: AppTabController(
             tabs: [
               AppTab(
+                id: "photos",
                 name: "Photos (${photos.length})",
                 icon: Icons.photo,
-                child: SingleChildScrollView(
-                  child: BusPhotoList(photos: photos),
-                ),
+                child: SingleChildScrollView(child: PhotoList(photos: photos)),
               ),
               AppTab(
+                id: "owned_models",
                 name: "Owned Models",
                 icon: Icons.directions_bus,
                 child: SingleChildScrollView(child: NotImplementedPage()),
               ),
               AppTab(
+                id: "favourites",
                 name: "Favourites",
                 icon: Icons.favorite,
                 child: FavouritesPage(isNested: true),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/tram.dart';
+import 'package:transportia/cm/cm_base.dart';
 import 'package:transportia/cm/tram.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/withdrawn.dart';
@@ -42,38 +43,28 @@ class _TramCardState extends State<TramCard> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child:
-                        //  null == null
-                        //     ?
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.broken_image),
-                            Text("No Photo"),
-                          ],
-                        ),
-                    // : Image.network(
-                    //     widget.vehicle.!.withSize(150),
-                    //     fit: BoxFit.cover,
-                    //   ),
+                    child: widget.vehicle.photo == null
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.broken_image),
+                              Text("No Photo"),
+                            ],
+                          )
+                        : Image.network(
+                            widget.vehicle.photo!.withSize(150),
+                            fit: BoxFit.cover,
+                          ),
                   ),
                   if (!widget.dummy)
                     Positioned(
                       top: 4,
                       right: 4,
-                      child: tramContextMenu(
+                      child: createCm(
                         context,
-                        tram: widget.vehicle,
+                        [CmContext.hasPhoto],
+                        widget.vehicle,
                         reload: widget.reload,
-                        isTool: true,
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.more_vert),
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.black54,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
                       ),
                     ),
                 ],
@@ -113,7 +104,7 @@ class _TramCardState extends State<TramCard> {
                               ? null
                               : () {
                                   context.push(
-                                    "/operators?id=${widget.vehicle.operator!.id}",
+                                    "/tram-operator/${widget.vehicle.operator!.id}",
                                   );
                                 },
                           child: SubText(widget.vehicle.operator!.name),

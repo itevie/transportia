@@ -4,11 +4,12 @@ import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/favourites.dart';
 import 'package:transportia/api/favourites_group.dart';
 import 'package:transportia/api/filled_out_bus_photo.dart';
+import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tram.dart';
 import 'package:transportia/prompts/input.dart';
 import 'package:transportia/widgets/lists/tram_list.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
-import 'package:transportia/widgets/lists/bus_photos_list.dart';
+import 'package:transportia/widgets/lists/photo_list.dart';
 import 'package:transportia/widgets/lists/vehicle_list.dart';
 
 class FavouritesPage extends StatefulWidget {
@@ -25,7 +26,7 @@ class _FavouritesPageState extends State<FavouritesPage>
   List<ApiTram> trams = [];
   List<ApiFavourite> services = [];
   List<ApiFavourite> operators = [];
-  List<ApiFilledOutPhotoBus> busPhotos = [];
+  List<ApiPhoto> busPhotos = [];
 
   List<ApiFavouriteGroup> groups = [];
 
@@ -208,7 +209,7 @@ class _FavouritesPageState extends State<FavouritesPage>
 
       setState(() {
         busPhotos = loaded
-            .map((favourite) => ApiFilledOutPhotoBus.fromJson(favourite.object))
+            .map((favourite) => ApiPhoto.fromJson(favourite.object))
             .toList();
 
         loadedPhotos = true;
@@ -246,6 +247,7 @@ class _FavouritesPageState extends State<FavouritesPage>
     return AppTabController(
       tabs: [
         AppTab(
+          id: "photos",
           name: 'Photos',
           icon: Icons.photo_outlined,
           onSelected: _loadPhotos,
@@ -256,17 +258,15 @@ class _FavouritesPageState extends State<FavouritesPage>
             reload: () {
               _loadGroups();
             },
-            builder: (favourites) => BusPhotoList(
+            builder: (favourites) => PhotoList(
               photos: favourites
-                  .map(
-                    (favourite) =>
-                        ApiFilledOutPhotoBus.fromJson(favourite.object),
-                  )
+                  .map((favourite) => ApiPhoto.fromJson(favourite.object))
                   .toList(),
             ),
           ),
         ),
         AppTab(
+          id: "buses",
           name: 'Buses',
           icon: Icons.directions_bus_outlined,
           onSelected: _loadVehicles,
@@ -285,6 +285,7 @@ class _FavouritesPageState extends State<FavouritesPage>
           ),
         ),
         AppTab(
+          id: "trams",
           name: 'Trams',
           icon: Icons.tram_outlined,
           onSelected: _loadTrams,
@@ -303,12 +304,14 @@ class _FavouritesPageState extends State<FavouritesPage>
           ),
         ),
         AppTab(
+          id: "services",
           name: 'Services',
           icon: Icons.route_outlined,
           onSelected: _loadServices,
           child: _buildServices(),
         ),
         AppTab(
+          id: "operators",
           name: 'Operators',
           icon: Icons.business_outlined,
           onSelected: _loadOperators,
@@ -417,7 +420,7 @@ class _FavouritesTabState extends State<FavouritesTab> {
               currentGroup = -1;
             });
           };
-        } else if (index == filteredGroups.length + 1 && widget.isNested) {
+        } else if (index == filteredGroups.length + 1 && !widget.isNested) {
           child = Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [Icon(Icons.add), Text("New Group")],

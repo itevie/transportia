@@ -3,6 +3,7 @@ import 'package:flutter/scheduler.dart';
 
 import 'package:transportia/api/bus_listing.dart';
 import 'package:transportia/api/bus_listing_options.dart';
+import 'package:transportia/widgets/lists/model_bus_listings.dart';
 import 'package:transportia/widgets/object/bus_listing_card.dart';
 import 'package:transportia/widgets/util/search_page.dart';
 
@@ -184,22 +185,7 @@ class _BusListingsPageState extends State<BusListingsPage> {
       },
       results: () => Expanded(
         child: SingleChildScrollView(
-          child: GridView.builder(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(8),
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 285,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 3 / 4,
-            ),
-            itemCount: busListings.length,
-            itemBuilder: (context, index) {
-              final listing = busListings[index];
-              return BusListingCard(listing: listing);
-            },
-          ),
+          child: ModelBusListingsList(listings: busListings),
         ),
       ),
     );

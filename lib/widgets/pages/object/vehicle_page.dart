@@ -4,15 +4,23 @@ import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/comment.dart';
 import 'package:transportia/api/favourites.dart';
 import 'package:transportia/api/filled_out_bus_photo.dart';
+import 'package:transportia/api/model_bus.dart';
+import 'package:transportia/api/photo.dart';
+import 'package:transportia/cm/cm_base.dart';
 import 'package:transportia/cm/vehicle.dart';
+import 'package:transportia/util/util.dart';
+import 'package:transportia/widgets/lists/model_bus_list.dart';
 import 'package:transportia/widgets/util/clickable.dart';
+import 'package:transportia/widgets/util/object_labels.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/comment_thread.dart';
 import 'package:transportia/widgets/favourite_icon.dart';
 import 'package:transportia/widgets/flickr_grid.dart';
-import 'package:transportia/widgets/lists/bus_photos_list.dart';
+import 'package:transportia/widgets/lists/photo_list.dart';
 import 'package:transportia/widgets/util/withdrawn.dart';
+
+import '../../livery/livery.dart';
 
 class VehiclePage extends StatefulWidget {
   final ApiBtVehicle vehicle;
@@ -24,8 +32,9 @@ class VehiclePage extends StatefulWidget {
 
 class _VehiclePageState extends State<VehiclePage> {
   late ApiBtVehicle vehicle;
-  List<ApiFilledOutPhotoBus> photos = [];
+  List<ApiPhoto> photos = [];
   List<ApiComment> comments = [];
+  List<ApiModelBus> potentialModels = [];
 
   @override
   void initState() {
@@ -38,8 +47,9 @@ class _VehiclePageState extends State<VehiclePage> {
   }
 
   void load({bool reload = false}) async {
-    final loadedPhotos = await ApiFilledOutPhotoBus.fetchAll(
-      search: widget.vehicle.reg,
+    final loadedPhotos = await ApiPhoto.fetchAll(search: widget.vehicle.reg);
+    final matches = await ApiModelBus.searchPotentialMatchesForVehicle(
+      widget.vehicle.reg,
     );
 
     // ApiBtVehicle? vehicle;
@@ -49,6 +59,7 @@ class _VehiclePageState extends State<VehiclePage> {
 
     setState(() {
       photos = loadedPhotos;
+      potentialModels = matches;
     });
   }
 
@@ -82,17 +93,36 @@ class _VehiclePageState extends State<VehiclePage> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      "${vehicle.reg} - ${vehicle.fleet}",
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "${vehicle.reg} - ${vehicle.fleet}",
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (vehicle.withdrawn) ...[
+                              const SizedBox(width: 8),
+                              const Withdrawn(),
+                            ],
+                          ],
+                        ),
+                        if (vehicle.livery != null)
+                          LiveryLabel(livery: vehicle.livery!),
+
+                        if (vehicle.operator != null)
+                          OperatorLabel(
+                            leadingText: "Operated by ",
+                            operator: vehicle.operator!,
+                          ),
+                      ],
                     ),
-                    if (vehicle.withdrawn) ...[
-                      const SizedBox(width: 8),
-                      const Withdrawn(),
-                    ],
+
                     Spacer(),
                     Column(
                       children: [
@@ -102,21 +132,11 @@ class _VehiclePageState extends State<VehiclePage> {
                           isFavourited: vehicle.isFavourited,
                           onChanged: () async => loadVehicle(),
                         ),
-                        vehicleContextMenu(context, vehicle: vehicle),
+                        createCm(context, [], vehicle),
                       ],
                     ),
                   ],
                 ),
-                Text(vehicle.livery?.name ?? ""),
-                if (vehicle.operator != null)
-                  Clickable(
-                    onTap: () {
-                      context.go("/operator/${vehicle.operator!.id}");
-                    },
-                    child: SubText(
-                      "Operated by ${vehicle.operator!.shortName} (${vehicle.operator!.nationalCode})",
-                    ),
-                  ),
               ],
             ),
           ),
@@ -126,13 +146,13 @@ class _VehiclePageState extends State<VehiclePage> {
           child: AppTabController(
             tabs: [
               AppTab(
+                id: "photos",
                 name: "Photos",
                 icon: Icons.camera,
-                child: SingleChildScrollView(
-                  child: BusPhotoList(photos: photos),
-                ),
+                child: SingleChildScrollView(child: PhotoList(photos: photos)),
               ),
               AppTab(
+                id: "flickr_photos",
                 name: "Flickr Photos",
                 icon: Icons.camera,
                 child: SingleChildScrollView(
@@ -140,6 +160,7 @@ class _VehiclePageState extends State<VehiclePage> {
                 ),
               ),
               AppTab(
+                id: "comments",
                 name: "Comments (${comments.length})",
                 icon: Icons.comment,
                 child: Padding(
@@ -153,6 +174,25 @@ class _VehiclePageState extends State<VehiclePage> {
                   ),
                 ),
               ),
+              if (potentialModels.isNotEmpty)
+                AppTab(
+                  id: "models",
+                  name: "Models (${potentialModels.length})",
+                  icon: Icons.directions_bus,
+                  child: Column(
+                    children: [
+                      const Text(
+                        "These are potential models based on the registration.",
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: ModelBusList(modelBuses: potentialModels),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),

@@ -14,8 +14,9 @@ class FlickrGrid extends StatelessWidget {
       future: fetchFlickrByTags(tags),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // TODO: Make this vertically centered
-          return const Center(child: CircularProgressIndicator());
+          return const Expanded(
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
 
         if (snapshot.hasError) {
