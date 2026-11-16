@@ -8,7 +8,7 @@ import 'package:transportia/widgets/lists/vehicle_list.dart';
 import 'package:transportia/widgets/lists/vehicle_list_rows.dart';
 import 'package:transportia/widgets/util/fully_search_page.dart';
 
-class VehicleSearchPage extends StatefulWidget {
+class VehicleSearchPage extends StatelessWidget {
   final ApiBtLivery? livery;
   final ApiTxOperator? operator;
   final ApiBtVehicleType? vehicleType;
@@ -35,11 +35,6 @@ class VehicleSearchPage extends StatefulWidget {
   });
 
   @override
-  State<VehicleSearchPage> createState() => _VehicleSearchPageState();
-}
-
-class _VehicleSearchPageState extends State<VehicleSearchPage> {
-  @override
   Widget build(BuildContext context) {
     return FullySearchPage<ApiBtVehicle>(
       searchHint: "Search by fleet or reg...",
@@ -59,16 +54,16 @@ class _VehicleSearchPageState extends State<VehicleSearchPage> {
         SearchFilter.vehicleMatched,
       ],
       initFilters: (filters) {
-        filters.query = widget.query;
-        filters.livery = widget.livery;
-        filters.operator = widget.operator;
-        filters.vehicleType = widget.vehicleType;
-        filters.withdrawn = widget.withdrawn;
-        filters.electric = widget.electric;
-        filters.doubleDecker = widget.doubleDecker;
-        filters.coach = widget.coach;
-        filters.hasImage = widget.hasImage;
-        filters.offset = widget.offset ?? 0;
+        filters.query = query;
+        filters.livery = livery;
+        filters.operator = operator;
+        filters.vehicleType = vehicleType;
+        filters.withdrawn = withdrawn;
+        filters.electric = electric;
+        filters.doubleDecker = doubleDecker;
+        filters.coach = coach;
+        filters.hasImage = hasImage;
+        filters.offset = offset ?? 0;
       },
       query: (filters) async {
         return await ApiBtVehicle.search(

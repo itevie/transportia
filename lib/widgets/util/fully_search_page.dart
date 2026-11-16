@@ -12,6 +12,7 @@ class FullySearchPage<T> extends StatefulWidget {
   final void Function(SearchFilters filters)? initFilters;
   final Widget Function(List<T> results) results;
   final Widget Function(List<T> results)? resultsTable;
+  final VoidCallback? createCallback;
 
   const FullySearchPage({
     super.key,
@@ -21,6 +22,7 @@ class FullySearchPage<T> extends StatefulWidget {
     this.resultsTable,
     this.initFilters,
     required this.query,
+    this.createCallback,
   });
 
   @override
@@ -39,6 +41,8 @@ class _FullySearchPageState<T> extends State<FullySearchPage<T>> {
     if (widget.initFilters != null) {
       widget.initFilters!(filters);
     }
+
+    load();
   }
 
   void load() async {
@@ -82,32 +86,18 @@ class _FullySearchPageState<T> extends State<FullySearchPage<T>> {
 
         addPostLoad();
       },
-      filters:
-          SearchFilterBuilder(
-            context: context,
-            filters: filters,
-            onChanged: () {
-              setState(() {
-                filters.offset = 0;
-              });
+      createCallback: widget.createCallback,
+      filters: SearchFilterBuilder(
+        context: context,
+        filters: filters,
+        onChanged: () {
+          setState(() {
+            filters.offset = 0;
+          });
 
-              load();
-            },
-          ).build([
-            SearchFilter.livery,
-            SearchFilter.vehicleType,
-            SearchFilter.operator,
-            SearchFilter.vehicle,
-            SearchFilter.electric,
-            SearchFilter.doubleDecker,
-            SearchFilter.coach,
-            SearchFilter.openTop,
-            SearchFilter.demonstrator,
-            SearchFilter.trainingVehicle,
-            SearchFilter.withdrawn,
-            SearchFilter.hasImage,
-            SearchFilter.vehicleMatched,
-          ]),
+          load();
+        },
+      ).build(widget.filters),
       onClear: () {
         setState(() {
           filters.clear();
