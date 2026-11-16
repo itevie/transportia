@@ -3,19 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:transportia/api/model_bus.dart';
 import 'package:transportia/api/model_bus_ownership.dart';
 import 'package:transportia/api/photo.dart';
-import 'package:transportia/api/tram.dart';
-import 'package:transportia/api/tram_livery.dart';
-import 'package:transportia/api/tram_operator.dart';
-import 'package:transportia/api/tram_type.dart';
 import 'package:transportia/prompts/model_bus.dart';
 import 'package:transportia/prompts/model_bus_ownerships.dart';
-import 'package:transportia/prompts/tram.dart';
-import 'package:transportia/prompts/tram_operator.dart';
-import 'package:transportia/prompts/tram_type.dart';
 import 'package:transportia/util/util.dart';
 import 'package:transportia/widgets/inputs/search_field.dart';
 import 'package:transportia/widgets/util/detail_chip.dart';
-import 'package:transportia/widgets/util/drop_down.dart';
 
 import '../../../livery/livery.dart';
 

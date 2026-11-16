@@ -2,31 +2,20 @@ import 'package:dawn_ui_flutter/prompts/prompts.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:transportia/api/bt_livery.dart';
-import 'package:transportia/api/bt_vehicle.dart';
-import 'package:transportia/api/bt_vehicle_type.dart';
 import 'package:transportia/api/comment.dart';
 import 'package:transportia/api/favourites.dart';
-import 'package:transportia/api/filled_out_bus_photo.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/photo_rating_response.dart';
-import 'package:transportia/api/tx_line.dart';
 import 'package:transportia/main.dart';
-import 'package:transportia/prompts/livery_search.dart';
-import 'package:transportia/prompts/route_search.dart';
 import 'package:transportia/prompts/todo.dart';
-import 'package:transportia/prompts/vehicle_search.dart';
-import 'package:transportia/prompts/vehicle_type_search.dart';
 import 'package:transportia/stores/current_user_store.dart';
 import 'package:transportia/theme.dart';
 import 'package:transportia/util/date.dart';
 import 'package:transportia/widgets/pages/object/photo_details/bus.dart';
 import 'package:transportia/widgets/pages/object/photo_details/model_bus.dart';
 import 'package:transportia/widgets/pages/object/photo_details/tram.dart';
-import 'package:transportia/widgets/util/drop_down.dart';
 import 'package:transportia/widgets/util/panel.dart';
 import 'package:transportia/widgets/comment_thread.dart';
-import 'package:transportia/widgets/util/detail_chip.dart';
 import 'package:transportia/widgets/favourite_icon.dart';
 import 'package:transportia/widgets/profile_picture.dart';
 import 'package:transportia/widgets/util/photo_type_badge.dart';
@@ -83,7 +72,6 @@ class _BusPhotoViewerState extends State<BusPhotoViewer> {
   }
 
   void loadPhoto() async {
-    print("Load photo");
     final photo = await ApiPhoto.fetch(widget.photo.id);
 
     setState(() {

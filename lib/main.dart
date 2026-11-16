@@ -224,7 +224,7 @@ class TransportiaShell extends StatelessWidget {
                     makeSideBar(Icons.photo, 'Bus Photos', '/photos'),
                     makeSideBar(
                       Icons.directions_bus,
-                      'Vehicle Search',
+                      'Bus Search',
                       '/vehicles',
                     ),
                     Divider(),

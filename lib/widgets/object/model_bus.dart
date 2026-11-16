@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:transportia/api/model_bus.dart';
 import 'package:transportia/api/model_bus_ownership.dart';
 import 'package:transportia/cm/cm_base.dart';
-import 'package:transportia/cm/model_bus.dart';
 import 'package:transportia/util/text.dart';
 import 'package:transportia/util/util.dart';
 import 'package:transportia/widgets/livery/livery.dart';

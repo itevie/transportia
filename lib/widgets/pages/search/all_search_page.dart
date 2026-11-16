@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/big_search.dart';
 import 'package:transportia/cm/cm_base.dart';
-import 'package:transportia/cm/service.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/util/icons.dart';
 import 'package:transportia/widgets/profile_picture.dart';

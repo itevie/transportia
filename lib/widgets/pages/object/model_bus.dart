@@ -1,25 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/bus_listing.dart';
 import 'package:transportia/api/comment.dart';
-import 'package:transportia/api/favourites.dart';
-import 'package:transportia/api/filled_out_bus_photo.dart';
 import 'package:transportia/api/model_bus.dart';
 import 'package:transportia/api/model_bus_photo_details.dart';
 import 'package:transportia/api/photo.dart';
-import 'package:transportia/cm/vehicle.dart';
 import 'package:transportia/util/util.dart';
-import 'package:transportia/widgets/lists/model_bus_list.dart';
 import 'package:transportia/widgets/lists/model_bus_listings.dart';
-import 'package:transportia/widgets/util/clickable.dart';
-import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
-import 'package:transportia/widgets/comment_thread.dart';
-import 'package:transportia/widgets/favourite_icon.dart';
-import 'package:transportia/widgets/flickr_grid.dart';
 import 'package:transportia/widgets/lists/photo_list.dart';
-import 'package:transportia/widgets/util/withdrawn.dart';
 
 import '../../livery/livery.dart';
 

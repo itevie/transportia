@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:transportia/api/favourites.dart';
-import 'package:transportia/api/filled_out_bus_photo.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/cm/cm_base.dart';
-import 'package:transportia/prompts/favourites_group_search.dart';
-import 'package:transportia/widgets/util/drop_down.dart';
 import 'package:transportia/widgets/favourite_icon.dart';
 import 'package:transportia/widgets/object/image_card.dart';
 

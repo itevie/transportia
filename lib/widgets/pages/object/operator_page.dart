@@ -5,7 +5,6 @@ import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/bus_photo_details.dart';
 import 'package:transportia/api/comment.dart';
 import 'package:transportia/api/photo.dart';
-import 'package:transportia/api/tram_photo_details.dart';
 import 'package:transportia/api/tx_line.dart';
 import 'package:transportia/api/tx_operator.dart';
 import 'package:transportia/widgets/lists/photo_list.dart';

@@ -6,7 +6,6 @@ import 'package:mime/mime.dart' show lookupMimeType;
 
 import 'package:transportia/api/api.dart';
 import 'package:transportia/api/bus_photo_details.dart';
-import 'package:transportia/api/filled_out_bus_photo.dart';
 import 'package:transportia/api/model_bus_photo_details.dart';
 import 'package:transportia/api/photo_rating_response.dart';
 import 'package:transportia/api/tram_photo_details.dart';
@@ -43,6 +42,10 @@ class ApiPhoto {
     } else if (photoType == PhotoType.tram) {
       if (tram != null && tram!.dFleet != null && tram!.dVehicleType != null) {
         return "${tram!.dFleet} - ${tram!.dVehicleType?.name}";
+      }
+    } else if (photoType == PhotoType.modelBus) {
+      if (modelBus != null && modelBus!.matchedModel != null) {
+        return "${modelBus!.matchedModel?.manufacturer} ${modelBus!.matchedModel?.productCode}${modelBus!.ownershipDetails?.certificateNumber != null ? "(#${modelBus!.ownershipDetails?.certificateNumber})" : ""}";
       }
     }
 

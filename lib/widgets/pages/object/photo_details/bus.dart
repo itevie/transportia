@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_livery.dart';
@@ -13,11 +11,9 @@ import 'package:transportia/prompts/route_search.dart';
 import 'package:transportia/prompts/vehicle_search.dart';
 import 'package:transportia/prompts/vehicle_type_search.dart';
 import 'package:transportia/util/util.dart';
-import 'package:transportia/util/vehicle_icons.dart';
 import 'package:transportia/widgets/inputs/search_field.dart';
 import 'package:transportia/widgets/livery/livery.dart';
 import 'package:transportia/widgets/util/detail_chip.dart';
-import 'package:transportia/widgets/util/drop_down.dart';
 
 class BusPhotoDetailsBit extends StatefulWidget {
   final ApiPhoto photo;

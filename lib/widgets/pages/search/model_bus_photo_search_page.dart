@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:transportia/api/model_bus_photo_details.dart';
 import 'package:transportia/api/photo.dart';
+import 'package:transportia/widgets/inputs/search_filtering/filter_type.dart';
 
 import 'package:transportia/widgets/lists/photo_list.dart';
 import 'package:transportia/widgets/util/fully_search_page.dart';
@@ -15,7 +16,12 @@ class ModelBusPhotoSearchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return FullySearchPage<ApiPhoto>(
       searchHint: "Search",
-      filters: [],
+      filters: [
+        SearchFilter.vehicleType,
+        SearchFilter.livery,
+        SearchFilter.operator,
+        SearchFilter.route,
+      ],
       initFilters: (filters) {
         filters.query = query;
       },
@@ -24,6 +30,10 @@ class ModelBusPhotoSearchPage extends StatelessWidget {
           search: filters.query == null || filters.query!.isEmpty
               ? null
               : filters.query,
+          mbdOperator: filters.operator?.id.toString(),
+          mbdLivery: filters.livery?.id.toString(),
+          mbdRouteNumber: filters.route?.name,
+          mbdVehicleType: filters.vehicleType?.id.toString(),
           offset: filters.offset,
         );
 

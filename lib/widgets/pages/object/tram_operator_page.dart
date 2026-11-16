@@ -1,22 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:transportia/api/bt_livery.dart';
-import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/comment.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tram.dart';
 import 'package:transportia/api/tram_livery.dart';
 import 'package:transportia/api/tram_operator.dart';
 import 'package:transportia/api/tram_photo_details.dart';
-import 'package:transportia/api/tx_line.dart';
-import 'package:transportia/api/tx_operator.dart';
 import 'package:transportia/widgets/lists/photo_list.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
-import 'package:transportia/widgets/comment_thread.dart';
-import 'package:transportia/widgets/service_number.dart';
-
-import '../../livery/livery.dart';
 
 class TramOperatorPage extends StatefulWidget {
   final ApiTramOperator operator;

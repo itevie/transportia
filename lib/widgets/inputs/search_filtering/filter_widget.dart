@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:transportia/api/bt_vehicle_type.dart';
-import 'package:transportia/api/tx_operator.dart';
-import 'package:transportia/prompts/operator_search.dart';
-import 'package:transportia/prompts/vehicle_type_search.dart';
 import 'package:transportia/widgets/inputs/obj_inputs.dart';
-import 'package:transportia/widgets/inputs/search_field.dart';
-import 'package:transportia/widgets/inputs/search_field_bool.dart';
 import 'package:transportia/widgets/inputs/search_filtering/filter_type.dart';
 import 'package:transportia/widgets/inputs/search_filtering/main_obj.dart';
 

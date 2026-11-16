@@ -4,7 +4,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:transportia/api/bus_listing.dart';
 import 'package:transportia/api/bus_listing_options.dart';
 import 'package:transportia/widgets/lists/model_bus_listings.dart';
-import 'package:transportia/widgets/object/bus_listing_card.dart';
 import 'package:transportia/widgets/util/search_page.dart';
 
 class BusListingsPage extends StatefulWidget {

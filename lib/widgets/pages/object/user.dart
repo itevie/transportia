@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:transportia/api/filled_out_bus_photo.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/user.dart';
 import 'package:transportia/stores/current_user_store.dart';

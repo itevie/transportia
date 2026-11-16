@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:transportia/api/comment.dart';
 import 'package:transportia/api/favourites.dart';
 import 'package:transportia/stores/current_user_store.dart';
-import 'package:transportia/widgets/util/drop_down.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/favourite_icon.dart';
 import 'package:transportia/widgets/profile_picture.dart';

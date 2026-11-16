@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/tram.dart';
 import 'package:transportia/cm/cm_base.dart';
-import 'package:transportia/cm/tram.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/withdrawn.dart';
 

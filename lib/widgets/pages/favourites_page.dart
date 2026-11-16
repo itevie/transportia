@@ -3,7 +3,6 @@ import 'package:transportia/api/bt_vehicle.dart';
 
 import 'package:transportia/api/favourites.dart';
 import 'package:transportia/api/favourites_group.dart';
-import 'package:transportia/api/filled_out_bus_photo.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tram.dart';
 import 'package:transportia/prompts/input.dart';

@@ -25,6 +25,7 @@ class TramsSearchPage extends StatelessWidget {
           liveryId: filters.tramLivery?.id,
           tramTypeId: filters.tramType?.id,
           operatorId: filters.tramOperator?.id,
+          offset: filters.offset,
         );
       },
       createCallback: () {
