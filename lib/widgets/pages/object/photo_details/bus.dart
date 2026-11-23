@@ -5,11 +5,11 @@ import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/bt_vehicle_type.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tx_line.dart';
-import 'package:transportia/cm/cm_base.dart';
-import 'package:transportia/prompts/livery_search.dart';
-import 'package:transportia/prompts/route_search.dart';
-import 'package:transportia/prompts/vehicle_search.dart';
-import 'package:transportia/prompts/vehicle_type_search.dart';
+import 'package:transportia/widgets/util/cm_base.dart';
+import 'package:transportia/widgets/prompts/livery_search.dart';
+import 'package:transportia/widgets/prompts/route_search.dart';
+import 'package:transportia/widgets/prompts/vehicle_search.dart';
+import 'package:transportia/widgets/prompts/vehicle_type_search.dart';
 import 'package:transportia/util/util.dart';
 import 'package:transportia/widgets/inputs/search_field.dart';
 import 'package:transportia/widgets/livery/livery.dart';
@@ -235,22 +235,31 @@ class BusPhotoDetailsBitState extends State<BusPhotoDetailsBit> {
 
         if (details?.matchedVehicle?.operator != null) ...[
           const SizedBox(height: 4),
-          DetailChip(
-            contents: Text(details!.matchedVehicle!.operator!.displayName),
-            icon: Icons.business,
-            onClick: () =>
-                context.go("/operator/${details.matchedVehicle!.operator!.id}"),
+          createCm(
+            context,
+            [CmContext.extSearch],
+            details!.matchedVehicle!.operator,
+            child: DetailChip(
+              contents: Text(details.matchedVehicle!.operator!.displayName),
+              icon: Icons.business,
+              onClick: () {},
+            ),
           ),
         ],
 
         if (details?.route != null) ...[
           const SizedBox(height: 4),
-          DetailChip(
-            contents: Text(
-              "${details!.route?.name} ${details.route?.inboundDescription}",
+          createCm(
+            context,
+            [CmContext.extSearch],
+            details!.route,
+            child: DetailChip(
+              contents: Text(
+                "${details.route?.name} ${details.route?.inboundDescription}",
+              ),
+              icon: Icons.route,
+              onClick: () {},
             ),
-            icon: Icons.route,
-            onClick: () => context.go("/photos?route=${details.route!.txId}"),
           ),
         ],
 

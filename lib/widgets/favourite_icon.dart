@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:transportia/api/favourites.dart';
+import 'package:transportia/stores/current_user_store.dart';
 
 class FavouriteButton extends StatelessWidget {
   final FavouriteType type;
@@ -17,13 +19,15 @@ class FavouriteButton extends StatelessWidget {
     this.compact = false,
   });
 
-  Future<void> _toggleFavourite() async {
+  Future<void> _toggleFavourite(BuildContext context) async {
     if (isFavourited == null) return;
 
+    final user = context.read<CurrentUserStore>().user;
+
     if (isFavourited!) {
-      await ApiFavourite.delete(type, id);
+      await ApiFavourite.delete(user!.id, type, id);
     } else {
-      await ApiFavourite.create(type, id);
+      await ApiFavourite.create(user!.id, type, id);
     }
 
     await onChanged();
@@ -32,7 +36,7 @@ class FavouriteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      onPressed: isFavourited == null ? null : _toggleFavourite,
+      onPressed: isFavourited == null ? null : () => _toggleFavourite(context),
       padding: compact ? EdgeInsets.zero : null,
       constraints: compact ? const BoxConstraints() : null,
       visualDensity: compact ? VisualDensity.compact : null,

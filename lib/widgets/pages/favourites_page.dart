@@ -1,450 +1,234 @@
+import 'package:dawn_ui_flutter/prompts/input.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:transportia/api/bt_vehicle.dart';
-
 import 'package:transportia/api/favourites.dart';
 import 'package:transportia/api/favourites_group.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tram.dart';
-import 'package:transportia/prompts/input.dart';
-import 'package:transportia/widgets/lists/tram_list.dart';
-import 'package:transportia/widgets/util/tab_bar.dart';
+import 'package:transportia/api/user.dart';
+import 'package:transportia/stores/current_user_store.dart';
+import 'package:transportia/theme.dart';
+import 'package:transportia/widgets/inputs/search_dropdown.dart';
 import 'package:transportia/widgets/lists/photo_list.dart';
+import 'package:transportia/widgets/lists/tram_list.dart';
 import 'package:transportia/widgets/lists/vehicle_list.dart';
 
-class FavouritesPage extends StatefulWidget {
+class FavouritesPageNew extends StatefulWidget {
+  final ApiUser? user;
   final bool isNested;
-  const FavouritesPage({super.key, this.isNested = false});
+
+  const FavouritesPageNew({super.key, this.isNested = false, this.user});
 
   @override
-  State<FavouritesPage> createState() => _FavouritesPageState();
+  State<FavouritesPageNew> createState() => _FavouritesPageNewState();
 }
 
-class _FavouritesPageState extends State<FavouritesPage>
-    with SingleTickerProviderStateMixin {
-  List<ApiBtVehicle> vehicles = [];
-  List<ApiTram> trams = [];
-  List<ApiFavourite> services = [];
-  List<ApiFavourite> operators = [];
-  List<ApiPhoto> busPhotos = [];
+class _FavouritesPageNewState extends State<FavouritesPageNew> {
+  FavouriteType selected = FavouriteType.vehicle;
+
+  // FavouriteType -> Group ID -> Favourites
+  // -1 represents all favourites.
+  final Map<FavouriteType, Map<int, List<ApiFavourite>>> loaded = {};
+
+  bool isLoading = false;
 
   List<ApiFavouriteGroup> groups = [];
 
-  bool loadingVehicles = false;
-  bool loadingServices = false;
-  bool loadingOperators = false;
-  bool loadingPhotos = false;
-  bool loadingTrams = false;
+  // null = group selection screen
+  // -1 = all favourites
+  // Any other value = selected group ID
+  int? currentGroup;
 
-  bool loadedVehicles = false;
-  bool loadedServices = false;
-  bool loadedOperators = false;
-  bool loadedPhotos = false;
-  bool loadedTrams = false;
+  int _requestId = 0;
 
   @override
   void initState() {
     super.initState();
-
-    _loadGroups();
-    _loadPhotos();
+    load(full: true);
   }
 
-  Future<void> _loadGroups() async {
-    final loaded = await ApiFavouriteGroup.getAll();
+  int getUser() {
+    if (widget.user != null) return widget.user!.id;
+    final user = context.read<CurrentUserStore>().user!.id;
 
-    setState(() {
-      groups = loaded;
-    });
+    return user;
   }
 
-  Future<void> _loadVehicles() async {
-    if (loadedVehicles || loadingVehicles) {
-      return;
-    }
+  int getCurrentUser() {
+    final user = context.read<CurrentUserStore>().user!.id;
+
+    return user;
+  }
+
+  Future<void> load({bool full = false}) async {
+    final requestId = ++_requestId;
 
     setState(() {
-      loadingVehicles = true;
+      isLoading = true;
     });
 
     try {
-      final loaded = await ApiFavourite.getByType(
-        FavouriteType.vehicle,
-        fillOut: true,
-      );
+      List<ApiFavouriteGroup>? results;
 
-      if (!mounted) return;
+      if (full) {
+        results = await ApiFavouriteGroup.getAll(getUser());
+      }
+
+      if (!mounted || requestId != _requestId) return;
 
       setState(() {
-        vehicles = loaded.map((f) => ApiBtVehicle.fromJson(f.object)).toList();
-        loadedVehicles = true;
-        loadingVehicles = false;
+        if (results != null) {
+          groups = results;
+        }
+
+        isLoading = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || requestId != _requestId) return;
 
       setState(() {
-        loadingVehicles = false;
+        isLoading = false;
       });
 
-      print(e);
+      debugPrint('Failed to load favourite groups: $e');
     }
   }
 
-  Future<void> _loadTrams() async {
-    if (loadedVehicles || loadingVehicles) {
+  Future<void> loadGroup(int? group, {bool force = false}) async {
+    final favouriteType = selected;
+    final groupId = group ?? -1;
+
+    // Use cached results if available.
+    if (!force && loaded[favouriteType]?.containsKey(groupId) == true) {
+      setState(() {
+        currentGroup = groupId;
+      });
       return;
     }
 
+    final requestId = ++_requestId;
+
     setState(() {
-      loadingVehicles = true;
+      currentGroup = groupId;
+      isLoading = true;
     });
 
     try {
-      final loaded = await ApiFavourite.getByType(
-        FavouriteType.tram,
-        fillOut: true,
-      );
+      final List<ApiFavourite> results;
 
-      if (!mounted) return;
+      if (group == null) {
+        results = await ApiFavourite.getByType(
+          getUser(),
+          favouriteType,
+          fillOut: true,
+        );
+      } else {
+        results = await ApiFavourite.getByGroup(
+          getUser(),
+          group,
+          fillOut: true,
+        );
+      }
+
+      if (!mounted || requestId != _requestId) return;
 
       setState(() {
-        trams = loaded.map((f) => ApiTram.fromJson(f.object)).toList();
-        loadedVehicles = true;
-        loadingVehicles = false;
+        loaded.putIfAbsent(favouriteType, () => {})[groupId] = results;
+        isLoading = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || requestId != _requestId) return;
 
       setState(() {
-        loadingVehicles = false;
+        isLoading = false;
       });
 
-      print(e);
+      debugPrint('Failed to load favourites: $e');
     }
   }
 
-  Future<void> _loadServices() async {
-    if (loadedServices || loadingServices) {
-      return;
-    }
+  Future<void> changeType(FavouriteType value) async {
+    if (value == selected) return;
+
+    ++_requestId;
 
     setState(() {
-      loadingServices = true;
+      selected = value;
+      currentGroup = null;
+      isLoading = false;
     });
+  }
+
+  Future<void> createGroup() async {
+    final name = await showInputPrompt(context, const Text('Group Name'), null);
+
+    if (name == null || name.trim().isEmpty) return;
 
     try {
-      final loaded = await ApiFavourite.getByType(
-        FavouriteType.service,
-        fillOut: true,
-      );
+      await ApiFavouriteGroup.create(getCurrentUser(), selected, name.trim());
 
       if (!mounted) return;
 
-      setState(() {
-        services = loaded;
-        loadedServices = true;
-        loadingServices = false;
-      });
+      await load(full: true);
     } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        loadingServices = false;
-      });
-
-      print(e);
+      debugPrint('Failed to create favourite group: $e');
     }
   }
 
-  Future<void> _loadOperators() async {
-    if (loadedOperators || loadingOperators) {
-      return;
-    }
-
-    setState(() {
-      loadingOperators = true;
-    });
-
-    try {
-      final loaded = await ApiFavourite.getByType(
-        FavouriteType.operator_,
-        fillOut: true,
-      );
-
-      if (!mounted) return;
-
-      setState(() {
-        operators = loaded;
-        loadedOperators = true;
-        loadingOperators = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        loadingOperators = false;
-      });
-
-      print(e);
-    }
-  }
-
-  Future<void> _loadPhotos() async {
-    if (loadedPhotos || loadingPhotos) {
-      return;
-    }
-
-    setState(() {
-      loadingPhotos = true;
-    });
-
-    try {
-      final loaded = await ApiFavourite.getByType(
-        FavouriteType.photo,
-        fillOut: true,
-      );
-
-      if (!mounted) return;
-
-      setState(() {
-        busPhotos = loaded
+  Widget buildFavourites(List<ApiFavourite> favourites) {
+    return switch (selected) {
+      FavouriteType.photo => PhotoList(
+        photos: favourites
             .map((favourite) => ApiPhoto.fromJson(favourite.object))
-            .toList();
-
-        loadedPhotos = true;
-        loadingPhotos = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        loadingPhotos = false;
-      });
-
-      print(e);
-    }
+            .toList(),
+      ),
+      FavouriteType.vehicle => VehicleList(
+        vehicles: favourites
+            .map((favourite) => ApiBtVehicle.fromJson(favourite.object))
+            .toList(),
+      ),
+      FavouriteType.tram => TramList(
+        vehicles: favourites
+            .map((favourite) => ApiTram.fromJson(favourite.object))
+            .toList(),
+      ),
+      _ => Center(child: Text('$selected not implemented yet')),
+    };
   }
 
-  Widget _buildServices() {
-    if (loadingServices) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return SizedBox();
-    // return ServiceFavouriteList(favourites: services);
-  }
-
-  Widget _buildOperators() {
-    if (loadingOperators) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return SizedBox();
-    // return OperatorFavouriteList(favourites: operators);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AppTabController(
-      tabs: [
-        AppTab(
-          id: "photos",
-          name: 'Photos',
-          icon: Icons.photo_outlined,
-          onSelected: _loadPhotos,
-          child: FavouritesTab(
-            type: FavouriteType.photo,
-            groups: groups,
-            isNested: widget.isNested,
-            reload: () {
-              _loadGroups();
-            },
-            builder: (favourites) => PhotoList(
-              photos: favourites
-                  .map((favourite) => ApiPhoto.fromJson(favourite.object))
-                  .toList(),
-            ),
-          ),
-        ),
-        AppTab(
-          id: "buses",
-          name: 'Buses',
-          icon: Icons.directions_bus_outlined,
-          onSelected: _loadVehicles,
-          child: FavouritesTab(
-            type: FavouriteType.vehicle,
-            groups: groups,
-            isNested: widget.isNested,
-            reload: () {
-              _loadGroups();
-            },
-            builder: (favourites) => VehicleList(
-              vehicles: favourites
-                  .map((f) => ApiBtVehicle.fromJson(f.object))
-                  .toList(),
-            ),
-          ),
-        ),
-        AppTab(
-          id: "trams",
-          name: 'Trams',
-          icon: Icons.tram_outlined,
-          onSelected: _loadTrams,
-          child: FavouritesTab(
-            type: FavouriteType.tram,
-            groups: groups,
-            isNested: widget.isNested,
-            reload: () {
-              _loadGroups();
-            },
-            builder: (favourites) => TramList(
-              vehicles: favourites
-                  .map((f) => ApiTram.fromJson(f.object))
-                  .toList(),
-            ),
-          ),
-        ),
-        AppTab(
-          id: "services",
-          name: 'Services',
-          icon: Icons.route_outlined,
-          onSelected: _loadServices,
-          child: _buildServices(),
-        ),
-        AppTab(
-          id: "operators",
-          name: 'Operators',
-          icon: Icons.business_outlined,
-          onSelected: _loadOperators,
-          child: _buildOperators(),
-        ),
-      ],
-    );
-  }
-}
-
-class FavouritesTab extends StatefulWidget {
-  final FavouriteType type;
-  final List<ApiFavouriteGroup> groups;
-  final Widget Function(List<ApiFavourite> favourites) builder;
-  final VoidCallback reload;
-  final bool isNested;
-
-  const FavouritesTab({
-    super.key,
-    required this.type,
-    required this.groups,
-    required this.builder,
-    required this.reload,
-    this.isNested = false,
-  });
-
-  @override
-  State<FavouritesTab> createState() => _FavouritesTabState();
-}
-
-class _FavouritesTabState extends State<FavouritesTab> {
-  int? currentGroup;
-  List<ApiFavourite> loaded = [];
-
-  Future<void> loadGroup(int? group) async {
-    setState(() {
-      loaded = [];
-    });
-
-    List<ApiFavourite> results;
-    if (group == null) {
-      results = await ApiFavourite.getByType(widget.type, fillOut: true);
-    } else {
-      results = await ApiFavourite.getByGroup(group, fillOut: true);
-    }
-
-    setState(() {
-      loaded = results;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final filteredGroups = widget.groups
-        .where((x) => x.favouriteType == widget.type)
-        .toList();
-
-    if (currentGroup != null) {
-      final groupName = currentGroup == -1
-          ? "All (${loaded.length})"
-          : "${widget.groups.firstWhere((x) => x.id == currentGroup).name} (${loaded.length})";
-
-      return SingleChildScrollView(
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      currentGroup = null;
-                    });
-                  },
-                  icon: const Icon(Icons.chevron_left),
-                ),
-                Text(groupName),
-                SizedBox.shrink(),
-              ],
-            ),
-            const SizedBox(height: 8),
-            widget.builder(loaded),
-          ],
-        ),
-      );
-    }
+  Widget buildGroups(List<ApiFavouriteGroup> filteredGroups) {
+    final showNewGroup = !widget.isNested;
 
     return GridView.builder(
       padding: const EdgeInsets.all(8),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 6,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 1,
+      gridDelegate: responsiveGridDelegate(
+        context,
+        minCardHeight: 150,
+        minCardWidth: 150,
       ),
-      itemCount: filteredGroups.length + (widget.isNested ? 1 : 2),
+      itemCount: filteredGroups.length + (showNewGroup ? 2 : 1),
       itemBuilder: (context, index) {
         late final Widget child;
         late final VoidCallback onTap;
 
         if (index == 0) {
-          child = const Text("All", textAlign: TextAlign.center);
-          onTap = () {
-            loadGroup(null);
-            setState(() {
-              currentGroup = -1;
-            });
-          };
-        } else if (index == filteredGroups.length + 1 && !widget.isNested) {
-          child = Column(
+          child = const Text('All', textAlign: TextAlign.center);
+
+          onTap = () => loadGroup(null);
+        } else if (showNewGroup && index == filteredGroups.length + 1) {
+          child = const Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [Icon(Icons.add), Text("New Group")],
+            children: [Icon(Icons.add), Text('New Group')],
           );
-          onTap = () async {
-            final name = await showInputPrompt(
-              context,
-              const Text("Group Name"),
-              null,
-            );
 
-            if (name == null) return;
-
-            await ApiFavouriteGroup.create(widget.type, name);
-            widget.reload();
-          };
+          onTap = createGroup;
         } else {
           final group = filteredGroups[index - 1];
+
           child = Text(group.name, textAlign: TextAlign.center);
-          onTap = () {
-            loadGroup(group.id);
-            setState(() {
-              currentGroup = group.id;
-            });
-          };
+
+          onTap = () => loadGroup(group.id);
         }
 
         return Card(
@@ -457,6 +241,67 @@ class _FavouritesTabState extends State<FavouritesTab> {
           ),
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredGroups = groups
+        .where((group) => group.favouriteType == selected)
+        .toList();
+
+    final favourites = currentGroup == null
+        ? null
+        : loaded[selected]?[currentGroup!];
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              if (currentGroup != null)
+                IconButton(
+                  onPressed: () {
+                    ++_requestId;
+
+                    setState(() {
+                      currentGroup = null;
+                      isLoading = false;
+                    });
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                ),
+              Expanded(
+                child: Text(
+                  '${widget.user != null ? "${widget.user!.username}'s" : "Your"} ${selected.apiValue} Favourites',
+                ),
+              ),
+              SizedBox(
+                width: 250,
+                child: InputDropdownField<FavouriteType>(
+                  label: 'Type',
+                  onChanged: changeType,
+                  items: FavouriteType.values,
+                  displayName: (type) => type.apiValue,
+                  selected: selected,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: currentGroup == null
+              ? isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : buildGroups(filteredGroups)
+              : isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : favourites != null
+              ? SingleChildScrollView(child: buildFavourites(favourites))
+              : const Center(child: Text('No favourites found')),
+        ),
+      ],
     );
   }
 }

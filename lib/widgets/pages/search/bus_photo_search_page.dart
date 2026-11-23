@@ -6,6 +6,7 @@ import 'package:transportia/api/bt_vehicle.dart';
 import 'package:transportia/api/bt_vehicle_type.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tx_line.dart';
+import 'package:transportia/api/tx_operator.dart';
 import 'package:transportia/api/user.dart';
 
 import 'package:transportia/widgets/inputs/search_filtering/filter_type.dart';
@@ -13,7 +14,7 @@ import 'package:transportia/widgets/inputs/search_filtering/filter_type.dart';
 import 'package:transportia/widgets/lists/photo_list.dart';
 import 'package:transportia/widgets/util/fully_search_page.dart';
 
-class PhotoSearchPage extends StatelessWidget {
+class BusPhotoSearchPage extends StatelessWidget {
   final String? query;
 
   final ApiBtLivery? livery;
@@ -21,8 +22,10 @@ class PhotoSearchPage extends StatelessWidget {
   final ApiBtVehicle? vehicle;
   final ApiUser? author;
   final ApiTxLine? route;
+  final ApiTxOperator? operator;
+  final bool isNested;
 
-  const PhotoSearchPage({
+  const BusPhotoSearchPage({
     super.key,
     this.query,
     this.livery,
@@ -30,6 +33,8 @@ class PhotoSearchPage extends StatelessWidget {
     this.vehicle,
     this.author,
     this.route,
+    this.isNested = false,
+    this.operator,
   });
 
   @override
@@ -41,6 +46,7 @@ class PhotoSearchPage extends StatelessWidget {
         SearchFilter.vehicleType,
         SearchFilter.vehicle,
         SearchFilter.route,
+        SearchFilter.operator,
         SearchFilter.author,
         SearchFilter.vehicleMatched,
       ],
@@ -51,7 +57,9 @@ class PhotoSearchPage extends StatelessWidget {
         filters.vehicle = vehicle;
         filters.author = author;
         filters.route = route;
+        filters.operator = operator;
       },
+      orderByType: OrderByType.photo,
       query: (filters) async {
         final photos = await ApiBusPhotoDetails.fetchAll(
           search: filters.query == null || filters.query!.isEmpty
@@ -63,13 +71,17 @@ class PhotoSearchPage extends StatelessWidget {
           bdVehicleId: filters.vehicle?.id,
           bdHasMatchedVehicle: filters.vehicleMatched,
           bdRoute: filters.route?.txId.toString(),
+          bdOperatorId: filters.operator?.nationalCode,
           offset: filters.offset,
+          orderBy: filters.orderBy,
         );
 
         return photos
             .skip(photos.length > 50 ? photos.length - 50 : 0)
             .toList();
       },
+      isNested: isNested,
+      nestedExternalLink: (query) => "/photos?$query",
       results: (results) => Expanded(
         child: SingleChildScrollView(child: PhotoList(photos: results)),
       ),

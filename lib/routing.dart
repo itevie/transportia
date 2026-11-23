@@ -89,6 +89,16 @@ Future<ApiBtVehicle?> getVehicle(String id) async {
   return ApiBtVehicle.get(int.parse(id));
 }
 
+Future<ApiBtVehicle?> getOptionalVehicle(String? id) async {
+  if (id == null || int.tryParse(id) == null) return null;
+
+  return ApiBtVehicle.get(int.parse(id));
+}
+
+Future<ApiBtVehicleType?> getVehicleType(String id) async {
+  return ApiBtVehicleType.get(int.parse(id));
+}
+
 Future<ApiTram?> getTram(String id) async {
   return ApiTram.get(int.parse(id));
 }
@@ -124,6 +134,10 @@ Future<ApiBtLivery?> getOptionalLivery(String? id) async {
   return ApiBtLivery.get(int.parse(id));
 }
 
+Future<ApiBtLivery?> getLivery(String id) async {
+  return ApiBtLivery.get(int.parse(id));
+}
+
 Future<ApiBtVehicleType?> getOptionalVehicleType(String? id) async {
   if (id == null || int.tryParse(id) == null) return null;
   return ApiBtVehicleType.get(int.parse(id));
@@ -131,5 +145,7 @@ Future<ApiBtVehicleType?> getOptionalVehicleType(String? id) async {
 
 Future<ApiTxOperator?> getOptionalOperator(String? id) async {
   if (id == null) return null;
+  print(id);
+  print(await ApiTxOperator.get(id));
   return ApiTxOperator.get(id);
 }

@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/big_search.dart';
-import 'package:transportia/cm/cm_base.dart';
+import 'package:transportia/widgets/object/small/service.dart';
+import 'package:transportia/widgets/util/cm_base.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/util/icons.dart';
 import 'package:transportia/widgets/profile_picture.dart';
@@ -89,6 +90,7 @@ class _AllSearchPageState extends State<AllSearchPage> {
           controller: _searchController,
           hintText: "Search everything...",
           onChanged: _onSearchChanged,
+          autoFocus: true,
           trailing: [
             if (_isLoading)
               const Padding(
@@ -171,6 +173,10 @@ class _AllSearchPageState extends State<AllSearchPage> {
 
                       return ListTile(
                         title: Text(operator.displayName),
+                        trailing: createCm(context, [
+                          CmContext.objOperator,
+                          CmContext.extSearch,
+                        ], operator),
                         onTap: () {
                           context.go("/operator/${operator.id}");
                           // setAppPage(OperatorPage(operator: operator));
@@ -191,25 +197,7 @@ class _AllSearchPageState extends State<AllSearchPage> {
                       itemBuilder: (context, index) {
                         final route = _results!.routes[index];
 
-                        return Row(
-                          children: [
-                            ServiceNumber(
-                              lineName: route.name,
-                              operator: route.operatorNationalCode,
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            Expanded(
-                              child: Text(
-                                route.displayName,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-
-                            createCm(context, [CmContext.objService], route),
-                          ],
-                        );
+                        return SmallServiceRow(route: route);
                       },
                     ),
                   ),
@@ -227,7 +215,7 @@ class _AllSearchPageState extends State<AllSearchPage> {
                       return ListTile(
                         title: Text(vehicleType.name),
                         onTap: () {
-                          context.go("/vehicles?vt=${vehicleType.id}");
+                          context.go("/vehicle-type/${vehicleType.id}");
                         },
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,

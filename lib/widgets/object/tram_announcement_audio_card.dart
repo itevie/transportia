@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:transportia/api/tram_announcement_audios.dart';
 import 'package:transportia/main.dart';
+import 'package:transportia/theme.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 
 class TramAnnouncementAudioCard extends StatefulWidget {
@@ -62,11 +63,10 @@ class _TramAnnouncementAudioCardState extends State<TramAnnouncementAudioCard> {
             Container(
               width: double.infinity,
               height: 150,
-              color: Theme.of(context).colorScheme.primary,
+              color: cardBgColor(context),
               child: Icon(
                 isPlaying ? Icons.pause_circle_filled : Icons.volume_up,
                 size: 64,
-                color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
             Padding(

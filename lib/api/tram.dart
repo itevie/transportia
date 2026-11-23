@@ -206,4 +206,43 @@ class ApiTram {
       "branding": branding,
     });
   }
+
+  static Future<List<ApiTram>> uploadCsv(String csvContents) async {
+    final data = await Api().post("/trams/csv", {"csv": csvContents});
+
+    if (data is! List) {
+      throw const FormatException(
+        "Expected the CSV preview response to contain a list of trams.",
+      );
+    }
+
+    return data.map((json) => ApiTram.fromJson(json)).toList();
+  }
+
+  static Future<int> bulkUpload(List<ApiTram> trams) async {
+    final data = await Api().post("/trams/bulk", {
+      "trams": trams
+          .map(
+            (tram) => {
+              "operator_id": tram.operatorId,
+              "fleet": tram.fleet,
+              "livery_id": tram.liveryId,
+              "tram_type_id": tram.tramTypeId,
+              "garage": tram.garage,
+              "withdrawn": tram.withdrawn,
+              "name": tram.name,
+              "branding": tram.branding,
+            },
+          )
+          .toList(),
+    });
+
+    if (data is! int) {
+      throw const FormatException(
+        "Expected the bulk upload response to contain the number of created trams.",
+      );
+    }
+
+    return data;
+  }
 }

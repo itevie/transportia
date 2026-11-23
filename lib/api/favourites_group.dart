@@ -17,10 +17,11 @@ class ApiFavouriteGroup {
   });
 
   factory ApiFavouriteGroup.fromJson(Map<String, dynamic> json) {
+    print(json["favourite_type"]);
     return ApiFavouriteGroup(
       id: json["id"],
       favouriteType: FavouriteType.values.firstWhere(
-        (type) => type.value == json["favourite_type"],
+        (type) => type.apiValue == json["favourite_type"],
       ),
       ownerId: json["owner_id"],
       name: json["name"],
@@ -38,8 +39,8 @@ class ApiFavouriteGroup {
     };
   }
 
-  static Future<ApiFavouriteGroup?> get(int id) async {
-    final data = await Api().get("/favourites/groups/$id");
+  static Future<ApiFavouriteGroup?> get(int userId, int id) async {
+    final data = await Api().get("/users/$userId/favourites/groups/$id");
 
     if (data == null) {
       return null;
@@ -48,13 +49,14 @@ class ApiFavouriteGroup {
     return ApiFavouriteGroup.fromJson(data);
   }
 
-  static Future<List<ApiFavouriteGroup>> getAll() async {
-    final data = await Api().get("/favourites/groups");
+  static Future<List<ApiFavouriteGroup>> getAll(int userId) async {
+    final data = await Api().get("/users/$userId/favourites/groups");
 
     return (data as List).map((x) => ApiFavouriteGroup.fromJson(x)).toList();
   }
 
-  static Future<List<ApiFavouriteGroup>> search({
+  static Future<List<ApiFavouriteGroup>> search(
+    int userId, {
     FavouriteType? favouriteType,
     String? search,
     int pageLength = 50,
@@ -69,32 +71,39 @@ class ApiFavouriteGroup {
     };
 
     final queryString = Uri(queryParameters: query).query;
-    final data = await Api().get("/favourites/groups?$queryString");
+    final data = await Api().get(
+      "/users/$userId/favourites/groups?$queryString",
+    );
 
     return (data as List)
         .map((json) => ApiFavouriteGroup.fromJson(json))
         .toList();
   }
 
-  static Future<void> create(FavouriteType favouriteType, String name) async {
-    await Api().post("/favourites/groups", {
+  static Future<void> create(
+    int userId,
+    FavouriteType favouriteType,
+    String name,
+  ) async {
+    await Api().post("/users/$userId/favourites/groups", {
       "favourite_type": favouriteType.value,
       "name": name,
     });
   }
 
-  static Future<void> update({
+  static Future<void> update(
+    int userId, {
     required int id,
     required FavouriteType favouriteType,
     required String name,
   }) async {
-    await Api().patch("/favourites/groups/$id", {
+    await Api().patch("/users/$userId/favourites/groups/$id", {
       "favourite_type": favouriteType.value,
       "name": name,
     });
   }
 
-  static Future<void> delete(int id) async {
-    await Api().delete("/favourites/groups/$id");
+  static Future<void> delete(int userId, int id) async {
+    await Api().delete("/users/$userId/favourites/groups/$id");
   }
 }

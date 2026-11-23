@@ -17,12 +17,20 @@ class Preferences {
     return _prefs.getString(key);
   }
 
+  List<String>? getStringList(String key) {
+    return _prefs.getStringList(key);
+  }
+
   bool getBool(String key) {
     return _prefs.getBool(key) ?? false;
   }
 
   Future<void> setString(String key, String value) async {
     await _prefs.setString(key, value);
+  }
+
+  Future<void> setStringList(String key, List<String> value) async {
+    await _prefs.setStringList(key, value);
   }
 
   Future<void> setBool(String key, bool value) async {

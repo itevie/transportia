@@ -20,6 +20,9 @@ class ApiTxLine {
   String get displayName =>
       "$name ${outboundDescription ?? inboundDescription}";
 
+  String get displayNameNoName =>
+      "${outboundDescription ?? inboundDescription}";
+
   ApiTxLine({
     required this.txId,
     required this.name,

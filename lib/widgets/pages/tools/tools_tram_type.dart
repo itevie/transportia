@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/tram_type.dart';
-import 'package:transportia/widgets/object/tram_type.dart';
+import 'package:transportia/widgets/object/small/tram_type.dart';
 import 'package:transportia/widgets/util/t_search_bar.dart';
 
 class ToolTramTypesPage extends StatefulWidget {

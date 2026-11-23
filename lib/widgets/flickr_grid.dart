@@ -14,7 +14,8 @@ class FlickrGrid extends StatelessWidget {
       future: fetchFlickrByTags(tags),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Expanded(
+          return const Padding(
+            padding: EdgeInsets.all(32),
             child: Center(child: CircularProgressIndicator()),
           );
         }

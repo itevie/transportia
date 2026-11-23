@@ -68,6 +68,7 @@ class ApiModelBusPhotoDetails {
     int? mbdOwnerId,
 
     int? pageLength = pageSize,
+    PhotoOrderBy? orderBy,
     int? offset,
   }) async {
     String query = "";
@@ -96,6 +97,8 @@ class ApiModelBusPhotoDetails {
       ("mbd_model_id", mbdModelId?.toString()),
       ("mbd_has_matched_model", mbdHasMatchedModel?.toString()),
       ("mbd_owner_id", mbdOwnerId?.toString()),
+
+      ("order_by", orderBy?.toJson()),
 
       // Pagination
       ("page_length", pageLength?.toString()),

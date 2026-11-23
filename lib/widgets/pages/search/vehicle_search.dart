@@ -20,6 +20,8 @@ class VehicleSearchPage extends StatelessWidget {
   final bool? withdrawn;
   final int? offset;
 
+  final bool isNested;
+
   const VehicleSearchPage({
     super.key,
     this.livery,
@@ -32,6 +34,7 @@ class VehicleSearchPage extends StatelessWidget {
     this.hasImage,
     this.withdrawn,
     this.offset,
+    this.isNested = false,
   });
 
   @override
@@ -52,6 +55,7 @@ class VehicleSearchPage extends StatelessWidget {
         SearchFilter.withdrawn,
         SearchFilter.hasImage,
         SearchFilter.vehicleMatched,
+        SearchFilter.vehicleUnique,
       ],
       initFilters: (filters) {
         filters.query = query;
@@ -82,8 +86,11 @@ class VehicleSearchPage extends StatelessWidget {
           trainingVehicle: filters.trainingVehicle,
           hasImage: filters.hasImage,
           offset: filters.offset,
+          unique: filters.vehicleUniqueFilter,
         );
       },
+      isNested: isNested,
+      nestedExternalLink: (query) => "/vehicles?$query",
       results: (results) => Expanded(
         child: SingleChildScrollView(child: VehicleList(vehicles: results)),
       ),

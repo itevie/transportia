@@ -263,3 +263,32 @@ enum PhotoType {
 
   int toJson() => value;
 }
+
+enum PhotoOrderBy {
+  newest,
+  oldest,
+  highestRated,
+  lowestRated;
+
+  String toJson() => switch (this) {
+    PhotoOrderBy.newest => 'newest',
+    PhotoOrderBy.oldest => 'oldest',
+    PhotoOrderBy.highestRated => 'highest_rated',
+    PhotoOrderBy.lowestRated => 'lowest_rated',
+  };
+
+  static PhotoOrderBy fromJson(String value) => switch (value) {
+    'newest' => PhotoOrderBy.newest,
+    'oldest' => PhotoOrderBy.oldest,
+    'highest_rated' => PhotoOrderBy.highestRated,
+    'lowest_rated' => PhotoOrderBy.lowestRated,
+    _ => PhotoOrderBy.newest,
+  };
+
+  String get displayName => switch (this) {
+    PhotoOrderBy.newest => 'Newest',
+    PhotoOrderBy.oldest => 'Oldest',
+    PhotoOrderBy.highestRated => 'Highest rated',
+    PhotoOrderBy.lowestRated => 'Lowest rated',
+  };
+}

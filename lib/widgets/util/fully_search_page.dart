@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:transportia/api/photo.dart';
+import 'package:transportia/util/async_widget_thing.dart';
 import 'package:transportia/widgets/inputs/search_filtering/filter_type.dart';
 import 'package:transportia/widgets/inputs/search_filtering/filter_widget.dart';
 import 'package:transportia/widgets/inputs/search_filtering/main_obj.dart';
 import 'package:transportia/widgets/util/search_page.dart';
+
+enum OrderByType { photo }
 
 class FullySearchPage<T> extends StatefulWidget {
   final String searchHint;
@@ -13,6 +17,9 @@ class FullySearchPage<T> extends StatefulWidget {
   final Widget Function(List<T> results) results;
   final Widget Function(List<T> results)? resultsTable;
   final VoidCallback? createCallback;
+  final bool isNested;
+  final String Function(String)? nestedExternalLink;
+  final OrderByType? orderByType;
 
   const FullySearchPage({
     super.key,
@@ -23,6 +30,9 @@ class FullySearchPage<T> extends StatefulWidget {
     this.initFilters,
     required this.query,
     this.createCallback,
+    this.isNested = false,
+    this.nestedExternalLink,
+    this.orderByType,
   });
 
   @override
@@ -33,6 +43,7 @@ class _FullySearchPageState<T> extends State<FullySearchPage<T>> {
   final filters = SearchFilters();
   List<T> results = [];
   bool loading = false;
+  AsyncWidgetThingResponse asyncThing = AsyncWidgetThingResponse();
 
   @override
   void initState() {
@@ -46,15 +57,20 @@ class _FullySearchPageState<T> extends State<FullySearchPage<T>> {
   }
 
   void load() async {
-    setState(() {
-      loading = true;
-    });
+    final results = await handleAsync(
+      "Fetch",
+      widget.query(filters),
+      callback: (v) {
+        setState(() {
+          asyncThing = v;
+        });
+      },
+    );
 
-    final results = await widget.query(filters);
+    if (results == null) return;
 
     setState(() {
       this.results = results;
-      loading = false;
     });
   }
 
@@ -66,9 +82,44 @@ class _FullySearchPageState<T> extends State<FullySearchPage<T>> {
 
   @override
   Widget build(BuildContext context) {
+    Widget? nextToSearch;
+
+    if (widget.orderByType == OrderByType.photo) {
+      nextToSearch = DropdownButton<PhotoOrderBy>(
+        value: filters.orderBy ?? PhotoOrderBy.newest,
+        hint: Text('Order by'),
+        underline: const SizedBox(),
+        items: const [
+          DropdownMenuItem(value: PhotoOrderBy.newest, child: Text('Newest')),
+          DropdownMenuItem(value: PhotoOrderBy.oldest, child: Text('Oldest')),
+          DropdownMenuItem(
+            value: PhotoOrderBy.highestRated,
+            child: Text('Highest rated'),
+          ),
+          DropdownMenuItem(
+            value: PhotoOrderBy.lowestRated,
+            child: Text('Lowest rated'),
+          ),
+        ],
+        onChanged: (PhotoOrderBy? value) {
+          setState(() {
+            filters.orderBy = value;
+          });
+
+          addPostLoad();
+        },
+      );
+    }
+
     return SearchPage(
       searchHint: "Search by fleet or reg...",
       prefilledQuery: filters.query,
+      isNested: widget.isNested,
+      nestedExternalLink: widget.nestedExternalLink != null
+          ? () {
+              return widget.nestedExternalLink!(filters.toQueryString());
+            }
+          : null,
       onSearch: (v) {
         setState(() {
           filters.query = v;
@@ -77,7 +128,9 @@ class _FullySearchPageState<T> extends State<FullySearchPage<T>> {
 
         addPostLoad();
       },
-      loading: loading,
+      nextToSearch: nextToSearch,
+      loading: asyncThing.loading,
+      error: asyncThing.error,
       currentOffset: filters.offset,
       offsetCallback: (offset) {
         setState(() {

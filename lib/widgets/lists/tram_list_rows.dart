@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/tram.dart';
-import 'package:transportia/cm/cm_base.dart';
-import 'package:transportia/cm/tram.dart';
+import 'package:transportia/widgets/util/cm_base.dart';
 import 'package:transportia/widgets/util/seach_results_table.dart';
 
 class TramListRow extends StatelessWidget {
@@ -32,6 +31,8 @@ class TramListRow extends StatelessWidget {
         ('Garage', 150, null),
 
         ('Vehicle Type', null, null),
+        ('Name', null, null),
+
         // ('Livery', null, null),
         // ('Badges', 70, null),
         ('Actions', 60, null),
@@ -42,6 +43,7 @@ class TramListRow extends StatelessWidget {
             'Fleet': Text(vehicle.fleet),
             'Operator': Text(vehicle.operator?.name ?? ""),
             'Garage': Text(vehicle.garage ?? ""),
+            'Name': Text(vehicle.name ?? ""),
             'Vehicle Type': Text(vehicle.tramType?.name ?? ""),
             // 'Livery': vehicle.livery != null
             //     ? Row(

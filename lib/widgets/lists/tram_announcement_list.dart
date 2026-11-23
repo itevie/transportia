@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:transportia/api/tram_announcement_audios.dart';
+import 'package:transportia/theme.dart';
 import 'package:transportia/widgets/object/tram_announcement_audio_card.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 
@@ -21,11 +22,10 @@ class TramAudioAnnouncementList extends StatelessWidget {
           shrinkWrap: true,
           padding: const EdgeInsets.all(8),
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 200,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 3 / 5,
+          gridDelegate: responsiveGridDelegate(
+            context,
+            minCardHeight: 250,
+            minCardWidth: 225,
           ),
           itemCount: announcements.length,
           itemBuilder: (context, index) {

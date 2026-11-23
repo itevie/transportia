@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:transportia/api/route_checklist.dart';
+import 'package:transportia/api/checklist.dart';
 import 'package:transportia/main.dart';
 import 'package:transportia/routing.dart';
 import 'package:transportia/widgets/pages/edit/model_bus.dart';
 import 'package:transportia/widgets/pages/edit/tram_operator.dart';
 import 'package:transportia/widgets/pages/edit/tram_type.dart';
-import 'package:transportia/widgets/pages/not_implemented.dart';
+import 'package:transportia/widgets/pages/favourites_page.dart';
+import 'package:transportia/widgets/pages/forums/forums_page.dart';
+import 'package:transportia/widgets/pages/object/livery_page.dart';
 import 'package:transportia/widgets/pages/object/model_bus.dart';
 import 'package:transportia/widgets/pages/object/tram_operator_page.dart';
 import 'package:transportia/widgets/pages/object/tram_page.dart';
+import 'package:transportia/widgets/pages/object/vehicle_type.dart';
+import 'package:transportia/widgets/pages/register.dart';
 import 'package:transportia/widgets/pages/search/all_search_page.dart';
 import 'package:transportia/widgets/pages/search/bus_listings.dart';
 import 'package:transportia/widgets/pages/object/photo.dart';
 import 'package:transportia/widgets/pages/edit/tram.dart';
 import 'package:transportia/widgets/pages/edit/vehicle.dart';
-import 'package:transportia/widgets/pages/favourites_page.dart';
 import 'package:transportia/widgets/pages/home.dart';
 import 'package:transportia/widgets/pages/login.dart';
 import 'package:transportia/widgets/pages/object/operator_page.dart';
@@ -26,6 +29,7 @@ import 'package:transportia/widgets/pages/search/tram_announcement_audios.dart';
 import 'package:transportia/widgets/pages/search/tram_photo_search_page.dart';
 import 'package:transportia/widgets/pages/service_checklist.dart';
 import 'package:transportia/widgets/pages/service_checklists.dart';
+import 'package:transportia/widgets/pages/settings.dart';
 import 'package:transportia/widgets/pages/tools/tools.dart';
 import 'package:transportia/widgets/pages/tools/tools_resources.dart';
 import 'package:transportia/widgets/pages/tools/tools_tram_operators.dart';
@@ -51,13 +55,12 @@ final transportiaRouter = GoRouter(
       },
       routes: [
         GoRoute(path: '/', builder: (context, state) => HomePage()),
-        GoRoute(
-          path: '/not-implemented',
-          builder: (context, state) => NotImplementedPage(),
-        ),
+        GoRoute(path: '/settings', builder: (context, state) => SettingsPage()),
+
         GoRoute(path: '/search', builder: (context, state) => AllSearchPage()),
         GoRoute(path: '/upload', builder: (context, state) => UploadPage()),
         GoRoute(path: '/login', builder: (context, state) => LoginPage()),
+        GoRoute(path: '/register', builder: (context, state) => RegisterPage()),
         GoRoute(path: '/tools', builder: (context, state) => ToolsPage()),
         GoRoute(
           path: '/tools/resources',
@@ -75,8 +78,8 @@ final transportiaRouter = GoRouter(
           path: '/tools/resources/tram-operators',
           builder: (context, state) => ToolTramOperatorsPage(),
         ),
+        GoRoute(path: "/forums", builder: (context, state) => ForumsPage()),
         GoRoute(path: "/trams", builder: (context, state) => TramsSearchPage()),
-
         GoRoute(
           path: '/tram/:id',
           builder: (context, state) => FutureRoute(
@@ -114,33 +117,31 @@ final transportiaRouter = GoRouter(
           path: '/photos',
           builder: (context, state) => FutureRoute(
             details: () async {
-              final query = state.uri.queryParameters['query'];
-              final livery = await getOptionalLivery(
-                state.uri.queryParameters['livery'],
-              );
-              final vt = await getOptionalVehicleType(
-                state.uri.queryParameters['vt'],
-              );
-              final operator = await getOptionalOperator(
-                state.uri.queryParameters['operator'],
-              );
-              final author = await getOptionalUser(
-                state.uri.queryParameters['author'],
-              );
-
               return (
-                query: query,
-                livery: livery,
-                vt: vt,
-                operator: operator,
-                author: author,
+                query: state.uri.queryParameters['query'],
+                livery: await getOptionalLivery(
+                  state.uri.queryParameters['livery_id'],
+                ),
+                vt: await getOptionalVehicleType(
+                  state.uri.queryParameters['vehicle_type_id'],
+                ),
+                vehicle: await getOptionalVehicle(
+                  state.uri.queryParameters['vehicle_type'],
+                ),
+                operator: await getOptionalOperator(
+                  state.uri.queryParameters['operator_id'],
+                ),
+                author: await getOptionalUser(
+                  state.uri.queryParameters['author'],
+                ),
               );
             },
-            build: (data) => PhotoSearchPage(
+            build: (data) => BusPhotoSearchPage(
               query: data.query,
               livery: data.livery,
               vehicleType: data.vt,
               author: data.author,
+              vehicle: data.vehicle,
             ),
           ),
         ),
@@ -171,6 +172,20 @@ final transportiaRouter = GoRouter(
           ),
         ),
         GoRoute(
+          path: '/vehicle-type/:id',
+          builder: (context, state) => FutureRoute(
+            details: () => getVehicleType(state.pathParameters['id']!),
+            build: (data) => VehicleTypePage(vehicleType: data!),
+          ),
+        ),
+        GoRoute(
+          path: '/livery/:id',
+          builder: (context, state) => FutureRoute(
+            details: () => getOptionalLivery(state.pathParameters['id']!),
+            build: (data) => LiveryPage(livery: data!),
+          ),
+        ),
+        GoRoute(
           path: '/vehicle/:id/edit',
           builder: (context, state) => FutureRoute(
             details: () => getVehicle(state.pathParameters['id']!),
@@ -192,9 +207,9 @@ final transportiaRouter = GoRouter(
 
               return (
                 query: q['query'],
-                livery: await getOptionalLivery(q['livery']),
-                vt: await getOptionalVehicleType(q['vt']),
-                operator: await getOptionalOperator(q['operator']),
+                livery: await getOptionalLivery(q['livery_id']),
+                vt: await getOptionalVehicleType(q['vehicle_type_id']),
+                operator: await getOptionalOperator(q['operator_id']),
                 electric: getOptionalBool(q["electric"]),
                 coach: getOptionalBool(q["coach"]),
                 doubleDecker: getOptionalBool(q["double_decker"]),
@@ -274,13 +289,13 @@ final transportiaRouter = GoRouter(
           path: '/checklist/:id',
           builder: (context, state) => FutureRoute(
             details: () =>
-                ApiRouteChecklist.fetch(int.parse(state.pathParameters["id"]!)),
+                ApiChecklist.fetch(int.parse(state.pathParameters["id"]!)),
             build: (data) => ServiceChecklist(checklist: data),
           ),
         ),
         GoRoute(
           path: '/favourites',
-          builder: (context, state) => FavouritesPage(),
+          builder: (context, state) => FavouritesPageNew(),
         ),
       ],
     ),
@@ -292,13 +307,23 @@ final transportiaRouter = GoRouter(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text('No page exists at ${state.uri.path}'),
+          const Text(
+            "This page has not been created yet or doesn't exist.\nCheck back soon!",
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            state.uri.toString(),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 8),
           ElevatedButton.icon(
             onPressed: () {
               context.go("/");
             },
-            label: Text("Home"),
+            label: const Text("Home"),
             icon: const Icon(Icons.home),
           ),
         ],

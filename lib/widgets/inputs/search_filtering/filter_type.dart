@@ -18,4 +18,6 @@ enum SearchFilter {
   hasImage,
   vehicleMatched,
   author,
+  tramAnnouncementGroup,
+  vehicleUnique,
 }

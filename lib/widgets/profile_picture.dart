@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum ProfilePictureUsage { nextToName, userProfile }
+enum ProfilePictureUsage { nextToName, userProfile, tiny }
 
 class ProfilePicture extends StatelessWidget {
   final String url;
@@ -21,6 +21,9 @@ class ProfilePicture extends StatelessWidget {
       ),
       ProfilePictureUsage.userProfile => ClipOval(
         child: Image.network(url, width: 100, height: 100, fit: BoxFit.cover),
+      ),
+      ProfilePictureUsage.tiny => ClipOval(
+        child: Image.network(url, width: 24, height: 24, fit: BoxFit.cover),
       ),
     };
   }

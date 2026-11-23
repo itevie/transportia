@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:transportia/api/favourites.dart';
 import 'package:transportia/api/photo.dart';
-import 'package:transportia/cm/cm_base.dart';
+import 'package:transportia/widgets/util/cm_base.dart';
 import 'package:transportia/widgets/favourite_icon.dart';
 import 'package:transportia/widgets/object/image_card.dart';
 

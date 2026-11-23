@@ -2,16 +2,20 @@ import 'package:dawn_ui_flutter/prompts/prompts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-import 'package:transportia/api/route_checklist.dart';
-import 'package:transportia/api/route_checklist_item.dart';
+import 'package:transportia/api/checklist.dart';
+import 'package:transportia/api/checklist_item.dart';
 import 'package:transportia/api/tx_line.dart';
-import 'package:transportia/prompts/operator_search.dart';
-import 'package:transportia/prompts/route_checklist_prompt.dart';
-import 'package:transportia/prompts/service_presets.dart';
+import 'package:transportia/widgets/prompts/big_button_selector.dart';
+import 'package:transportia/widgets/prompts/operator_search.dart';
+import 'package:transportia/widgets/prompts/route_checklist_prompt.dart';
+import 'package:transportia/widgets/prompts/service_presets.dart';
+import 'package:transportia/util/checklist_manager.dart';
 import 'package:transportia/widgets/service_number.dart';
+import 'package:transportia/widgets/util/sub_text.dart';
+import 'package:transportia/widgets/util/toasts.dart';
 
 class ServiceChecklist extends StatefulWidget {
-  final ApiRouteChecklist checklist;
+  final ApiChecklist checklist;
 
   const ServiceChecklist({super.key, required this.checklist});
 
@@ -21,9 +25,11 @@ class ServiceChecklist extends StatefulWidget {
 
 class _ServiceChecklistState extends State<ServiceChecklist> {
   late TextEditingController searchController;
-  late List<ApiRouteChecklistItem> allItems;
+  late List<ApiChecklistItem> allItems;
 
-  List<ApiRouteChecklistItem> items = [];
+  bool loading = false;
+
+  List<ApiChecklistItem> items = [];
   List<int> ignoredChecks = [];
 
   bool completedOnly = false;
@@ -38,12 +44,16 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
   }
 
   void reload() async {
+    setState(() {
+      loading = true;
+    });
     // final loaded = await ApiRouteChecklist.fetch(widget.checklist.id);
     final items = await widget.checklist.getItems();
 
     setState(() {
       allItems = items;
       this.items = items;
+      loading = false;
     });
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -62,12 +72,21 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
     }
 
     final filtered = allItems.where((item) {
-      final line = item.line;
+      if (widget.checklist.checklistType == ChecklistType.service) {
+        final line = item.txLine;
 
-      return line.name.toLowerCase().contains(query) ||
-          (line.inboundDescription ?? '').toLowerCase().contains(query) ||
-          (line.outboundDescription ?? '').toLowerCase().contains(query) ||
-          (line.operatorNationalCode ?? '').toLowerCase().contains(query);
+        return line.name.toLowerCase().contains(query) ||
+            (line.inboundDescription ?? '').toLowerCase().contains(query) ||
+            (line.outboundDescription ?? '').toLowerCase().contains(query) ||
+            (line.operatorNationalCode ?? '').toLowerCase().contains(query);
+      } else if (widget.checklist.checklistType == ChecklistType.vehicle) {
+        final vehicle = item.vehicle;
+
+        return vehicle.reg.toLowerCase().contains(query) ||
+            vehicle.fleet.toLowerCase().contains(query);
+      } else {
+        return false;
+      }
     }).toList();
 
     setState(() {
@@ -82,8 +101,19 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
             ...items,
           ].where((x) => completedOnly ? x.completedAt != null : true).toList()
           ..sort((a, b) {
-            final aName = a.line.name.trim().toLowerCase();
-            final bName = b.line.name.trim().toLowerCase();
+            final aName =
+                (widget.checklist.checklistType == ChecklistType.service
+                        ? a.txLine.name
+                        : a.vehicle.reg)
+                    .trim()
+                    .toLowerCase();
+
+            final bName =
+                (widget.checklist.checklistType == ChecklistType.service
+                        ? b.txLine.name
+                        : b.vehicle.reg)
+                    .trim()
+                    .toLowerCase();
 
             final aNumber = int.tryParse(aName);
             final bNumber = int.tryParse(bName);
@@ -138,11 +168,13 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
             sortedItems.isEmpty
                 ? Expanded(
                     child: Center(
-                      child: Text(
-                        completedOnly
-                            ? "Nothing completed yet!"
-                            : "No services yet, click the + to add some!",
-                      ),
+                      child: loading
+                          ? CircularProgressIndicator()
+                          : Text(
+                              completedOnly
+                                  ? "Nothing completed yet!"
+                                  : "No services yet, click the + to add some!",
+                            ),
                     ),
                   )
                 : Expanded(
@@ -151,27 +183,62 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
                       itemBuilder: (context, index) {
                         final item = sortedItems[index];
 
+                        final subText =
+                            widget.checklist.checklistType ==
+                                ChecklistType.service
+                            ? ""
+                            : [
+                                    item.vehicle.vehicleType?.name,
+                                    item.vehicle.operator?.displayName,
+                                    item.vehicle.livery?.name,
+                                  ]
+                                  .whereType<String>()
+                                  .where((e) => e.isNotEmpty)
+                                  .join(' - ');
+
                         return Card(
                           child: Row(
                             children: [
-                              ServiceNumber(
-                                lineName: item.line.name,
-                                operator: item.line.operatorNationalCode,
-                              ),
-
-                              const SizedBox(width: 8),
-
-                              Expanded(
-                                child: Text(
-                                  item.line.inboundDescription ??
-                                      item.line.outboundDescription ??
-                                      "",
-                                  overflow: TextOverflow.ellipsis,
+                              if (widget.checklist.checklistType ==
+                                  ChecklistType.service) ...[
+                                ServiceNumber(
+                                  lineName: item.txLine.name,
+                                  operator: item.txLine.operatorNationalCode,
                                 ),
-                              ),
+
+                                const SizedBox(width: 8),
+
+                                Expanded(
+                                  child: Text(
+                                    item.txLine.inboundDescription ??
+                                        item.txLine.outboundDescription ??
+                                        "",
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ] else if (widget.checklist.checklistType ==
+                                  ChecklistType.vehicle) ...[
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsetsGeometry.all(8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.vehicle.displayName,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (subText.isNotEmpty)
+                                          SubText(subText),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
 
                               Checkbox(
-                                key: Key("${item.id}:${item.lineId}"),
+                                key: Key("${item.id}:${item.objId}"),
                                 value: item.completedAt != null,
                                 onChanged: (_) async {
                                   if (ignoredChecks.contains(item.id)) return;
@@ -199,61 +266,11 @@ class _ServiceChecklistState extends State<ServiceChecklist> {
           bottom: 16,
           child: FloatingActionButton(
             onPressed: () async {
-              final result = await showRouteChecklistPrompt(context);
-
-              if (result == "Operator") {
-                final operator = await showOperatorSearchPrompt(
-                  // ignore: use_build_context_synchronously
-                  context: context,
-                );
-
-                if (operator == null) return;
-
-                final lines = await ApiTxLine.fetchAll(
-                  operatorNationalCode: operator.nationalCode,
-                  pageLength: 1000,
-                );
-
-                final confirmed = await showConfirmPrompt(
-                  // ignore: use_build_context_synchronously
-                  context,
-                  const Text("Add Lines?"),
-                  Text(
-                    "Are you sure you want to add "
-                    "${lines.length} lines from "
-                    "${operator.shortName} (${operator.nationalCode}) "
-                    "to the ${widget.checklist.title} checklist?",
-                  ),
-                );
-
-                if (!confirmed) return;
-
-                await widget.checklist.addOperator(operator.nationalCode!);
-              } else if (result == "Preset") {
-                // ignore: use_build_context_synchronously, unused_local_variable
-                final preset = await showServicePresetPrompt(context: context);
-                if (preset == null) return;
-
-                final count = await ApiRouteChecklist.countBulkOperator(
-                  preset.value,
-                );
-
-                print(preset.value);
-
-                final confirmed = await showConfirmPrompt(
-                  context,
-                  const Text("Add Lines?"),
-                  Text(
-                    "Are you sure you want to add $count lines from ${preset.value.length} operators to the ${widget.checklist.title} checlist?",
-                  ),
-                );
-
-                if (!confirmed) return;
-
-                await widget.checklist.addBulkOperator(preset.value);
-              }
-
-              reload();
+              await checklistAddFully(
+                context,
+                widget.checklist,
+                reload: reload,
+              );
             },
             child: const Icon(Icons.add),
           ),

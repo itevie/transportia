@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:transportia/api/user.dart';
-import 'package:transportia/prompts/error.dart';
+import 'package:transportia/stores/current_user_store.dart';
+import 'package:transportia/util/auth.dart';
+import 'package:transportia/widgets/prompts/error.dart';
 import 'package:transportia/util/prefs.dart';
 import 'package:transportia/widgets/util/center_page_container.dart';
 
@@ -26,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void login() async {
+    final currentUser = context.read<CurrentUserStore>();
     final result = await ApiUser.login(
       emailController.text,
       passwordController.text,
@@ -33,9 +37,8 @@ class _LoginPageState extends State<LoginPage> {
 
     if (result.$1) {
       await Preferences().setString("token", result.$2);
+      checkLogin();
       context.push("/");
-      // TODO: Fix reload
-      // reload();
     } else {
       showErrorPrompt(context, result.$2);
     }
@@ -81,7 +84,12 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 16),
           Row(
             children: [
-              TextButton(onPressed: () {}, child: const Text("Register")),
+              TextButton(
+                onPressed: () {
+                  context.go("/register");
+                },
+                child: const Text("Register"),
+              ),
               Spacer(),
               ElevatedButton.icon(
                 onPressed: login,

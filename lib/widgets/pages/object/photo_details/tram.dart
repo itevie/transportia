@@ -4,9 +4,9 @@ import 'package:transportia/api/tram.dart';
 import 'package:transportia/api/tram_livery.dart';
 import 'package:transportia/api/tram_operator.dart';
 import 'package:transportia/api/tram_type.dart';
-import 'package:transportia/prompts/tram.dart';
-import 'package:transportia/prompts/tram_operator.dart';
-import 'package:transportia/prompts/tram_type.dart';
+import 'package:transportia/widgets/prompts/tram.dart';
+import 'package:transportia/widgets/prompts/tram_operator.dart';
+import 'package:transportia/widgets/prompts/tram_type.dart';
 import 'package:transportia/widgets/inputs/search_field.dart';
 import 'package:transportia/widgets/util/detail_chip.dart';
 

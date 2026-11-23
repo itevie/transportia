@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/model_bus.dart';
-import 'package:transportia/cm/cm_base.dart';
-import 'package:transportia/cm/model_bus.dart';
+import 'package:transportia/widgets/util/cm_base.dart';
 import 'package:transportia/widgets/util/seach_results_table.dart';
 
 class ModelBusListRows extends StatelessWidget {

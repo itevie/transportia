@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:transportia/api/photo.dart';
-import 'package:transportia/prompts/photo_type.dart';
-import 'package:transportia/prompts/progress.dart';
+import 'package:transportia/widgets/prompts/photo_type.dart';
+import 'package:transportia/widgets/prompts/progress.dart';
 import 'package:transportia/stores/current_user_store.dart';
 import 'package:transportia/util/date.dart';
 import 'package:transportia/util/images.dart';

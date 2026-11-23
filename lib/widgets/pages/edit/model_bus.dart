@@ -7,12 +7,12 @@ import 'package:transportia/api/model_bus.dart';
 import 'package:transportia/api/tx_line.dart';
 import 'package:transportia/api/tx_operator.dart';
 import 'package:transportia/main.dart';
-import 'package:transportia/prompts/livery_search.dart';
-import 'package:transportia/prompts/model_bus_manufacturer.dart';
-import 'package:transportia/prompts/operator_search.dart';
-import 'package:transportia/prompts/route_search.dart';
-import 'package:transportia/prompts/vehicle_search.dart';
-import 'package:transportia/prompts/vehicle_type_search.dart';
+import 'package:transportia/widgets/prompts/livery_search.dart';
+import 'package:transportia/widgets/prompts/model_bus_manufacturer.dart';
+import 'package:transportia/widgets/prompts/operator_search.dart';
+import 'package:transportia/widgets/prompts/route_search.dart';
+import 'package:transportia/widgets/prompts/vehicle_search.dart';
+import 'package:transportia/widgets/prompts/vehicle_type_search.dart';
 import 'package:transportia/widgets/inputs/search_field.dart';
 import 'package:transportia/widgets/inputs/search_field_bool.dart';
 import 'package:transportia/widgets/inputs/search_field_int.dart';
@@ -21,6 +21,7 @@ import 'package:transportia/widgets/inputs/search_field_text.dart';
 import 'package:transportia/widgets/object/model_bus.dart';
 import 'package:transportia/widgets/util/edit_object.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
+import 'package:transportia/widgets/util/toasts.dart';
 
 class ModelBusEditPage extends StatefulWidget {
   final ApiModelBus? modelBus;
@@ -163,6 +164,9 @@ class _ModelBusEditPageState extends State<ModelBusEditPage> {
             hasCertificate: hasCertificate,
             certificateMax: maxCertificate ?? 0,
           );
+
+          // ignore: use_build_context_synchronously
+          showSuccessToast(context, "Model bus ${data.productCode} created!");
         } else {
           await modelBus!.updateModelBus(
             manufacturer: data.manufacturer,
@@ -183,6 +187,9 @@ class _ModelBusEditPageState extends State<ModelBusEditPage> {
             certificateMax: maxCertificate ?? 0,
             hasCertificate: hasCertificate,
           );
+
+          // ignore: use_build_context_synchronously
+          showSuccessToast(context, "Saved model bus details!");
         }
 
         if (lastUri != null) context.go(lastUri!);

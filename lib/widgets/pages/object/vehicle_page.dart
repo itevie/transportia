@@ -4,9 +4,12 @@ import 'package:transportia/api/comment.dart';
 import 'package:transportia/api/favourites.dart';
 import 'package:transportia/api/model_bus.dart';
 import 'package:transportia/api/photo.dart';
-import 'package:transportia/cm/cm_base.dart';
+import 'package:transportia/widgets/util/cm_base.dart';
 import 'package:transportia/widgets/lists/model_bus_list.dart';
+import 'package:transportia/widgets/pages/search/bus_photo_search_page.dart';
+import 'package:transportia/widgets/pages/search/vehicle_search.dart';
 import 'package:transportia/widgets/util/object_labels.dart';
+import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/comment_thread.dart';
 import 'package:transportia/widgets/favourite_icon.dart';
@@ -104,6 +107,13 @@ class _VehiclePageState extends State<VehiclePage> {
                             ],
                           ],
                         ),
+
+                        if (vehicle.vehicleType != null)
+                          VehicleTypeLabel(
+                            vt: vehicle.vehicleType!,
+                            child: SubText(vehicle.vehicleType!.name),
+                          ),
+
                         if (vehicle.livery != null)
                           LiveryLabel(livery: vehicle.livery!),
 
@@ -141,7 +151,7 @@ class _VehiclePageState extends State<VehiclePage> {
                 id: "photos",
                 name: "Photos",
                 icon: Icons.camera,
-                child: SingleChildScrollView(child: PhotoList(photos: photos)),
+                child: BusPhotoSearchPage(isNested: true, vehicle: vehicle),
               ),
               AppTab(
                 id: "flickr_photos",

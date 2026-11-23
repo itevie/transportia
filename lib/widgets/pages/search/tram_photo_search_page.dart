@@ -26,6 +26,7 @@ class TramPhotoSearchPage extends StatelessWidget {
       initFilters: (filters) {
         filters.query = query;
       },
+      orderByType: OrderByType.photo,
       query: (filters) async {
         final listings = await ApiTramPhotoDetails.fetchAll(
           search: filters.query == null || filters.query!.isEmpty
@@ -35,6 +36,7 @@ class TramPhotoSearchPage extends StatelessWidget {
           tdOperatorId: filters.tramOperator?.id,
           tdVehicleTypeId: filters.tramType?.id,
           offset: filters.offset,
+          orderBy: filters.orderBy,
           tdHasMatchedVehicle: filters.vehicleMatched,
         );
 

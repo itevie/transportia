@@ -4,13 +4,16 @@ import 'package:transportia/api/tram.dart';
 import 'package:transportia/api/tram_operator.dart';
 import 'package:transportia/api/tram_type.dart';
 import 'package:transportia/main.dart';
-import 'package:transportia/prompts/tram_operator.dart';
-import 'package:transportia/prompts/tram_type.dart';
+import 'package:transportia/widgets/lists/tram_list_rows.dart';
+import 'package:transportia/widgets/prompts/general_confirm.dart';
+import 'package:transportia/widgets/prompts/tram_operator.dart';
+import 'package:transportia/widgets/prompts/tram_type.dart';
 import 'package:transportia/widgets/inputs/search_field.dart';
 import 'package:transportia/widgets/inputs/search_field_bool.dart';
 import 'package:transportia/widgets/inputs/search_field_text.dart';
 import 'package:transportia/widgets/util/edit_object.dart';
 import 'package:transportia/widgets/object/tram_card.dart';
+import 'package:transportia/widgets/util/toasts.dart';
 
 class TramEditPage extends StatefulWidget {
   final ApiTram? tram;
@@ -74,6 +77,9 @@ class _TramEditPageState extends State<TramEditPage> {
             operatorId: operator?.id,
             tramTypeId: tramType?.id,
           );
+
+          // ignore: use_build_context_synchronously
+          showSuccessToast(context, "Created tram ${fleet.text}!");
         } else {
           await tram!.updateTram(
             fleet: fleet.text,
@@ -84,11 +90,49 @@ class _TramEditPageState extends State<TramEditPage> {
             operatorId: operator?.id,
             tramTypeId: tramType?.id,
           );
+
+          // ignore: use_build_context_synchronously
+          showSuccessToast(context, "Saved tram details!");
         }
 
         if (lastUri != null) context.go(lastUri!);
       },
       title: widget.tram == null ? "Create Tram" : "Edit Tram",
+      csvOptions: CsvOptions(
+        templateCsvParts: [
+          "fleet",
+          "operator_id",
+          "tram_type_id",
+          "name",
+          "withdrawn",
+          "garage",
+          "branding",
+        ],
+        rowCallback: (contents) async {
+          final trams = await ApiTram.uploadCsv(contents);
+
+          if (!context.mounted) return;
+
+          final confirmed = await showConfirmModal(
+            context,
+            title: 'Does this look good?',
+            child: SizedBox(
+              width: double.maxFinite,
+              child: TramListRow(vehicles: trams),
+            ),
+          );
+
+          if (confirmed != true || !context.mounted) return;
+
+          final imported = await ApiTram.bulkUpload(trams);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully imported / updated $imported trams.'),
+            ),
+          );
+        },
+      ),
       options: [
         SizedBox(
           width: 250,

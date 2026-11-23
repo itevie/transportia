@@ -93,6 +93,7 @@ class ApiBusPhotoDetails {
     String? bdRoute,
     bool? bdHasMatchedVehicle,
     int? pageLength = pageSize,
+    PhotoOrderBy? orderBy,
     int? offset,
   }) async {
     String query = "";
@@ -113,6 +114,7 @@ class ApiBusPhotoDetails {
       ("bd_has_matched_vehicle", bdHasMatchedVehicle?.toString()),
       ("bd_route", bdRoute),
       ("page_length", pageLength?.toString()),
+      ("order_by", orderBy?.toJson()),
       ("offset", offset?.toString()),
     ].where((x) => x.$2 != null);
 

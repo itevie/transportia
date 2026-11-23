@@ -25,6 +25,7 @@ class ModelBusPhotoSearchPage extends StatelessWidget {
       initFilters: (filters) {
         filters.query = query;
       },
+      orderByType: OrderByType.photo,
       query: (filters) async {
         final listings = await ApiModelBusPhotoDetails.fetchAll(
           search: filters.query == null || filters.query!.isEmpty
@@ -34,6 +35,7 @@ class ModelBusPhotoSearchPage extends StatelessWidget {
           mbdLivery: filters.livery?.id.toString(),
           mbdRouteNumber: filters.route?.name,
           mbdVehicleType: filters.vehicleType?.id.toString(),
+          orderBy: filters.orderBy,
           offset: filters.offset,
         );
 

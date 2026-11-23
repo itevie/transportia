@@ -7,7 +7,8 @@ import 'package:transportia/api/favourites.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/photo_rating_response.dart';
 import 'package:transportia/main.dart';
-import 'package:transportia/prompts/todo.dart';
+import 'package:transportia/util/mobile.dart';
+import 'package:transportia/widgets/prompts/todo.dart';
 import 'package:transportia/stores/current_user_store.dart';
 import 'package:transportia/theme.dart';
 import 'package:transportia/util/date.dart';
@@ -33,6 +34,10 @@ class BusPhotoViewer extends StatefulWidget {
 class _BusPhotoViewerState extends State<BusPhotoViewer> {
   late ApiPhoto photo;
   ApiPhotoRatingResponse? photoRating;
+  bool mobileDrawerShown = false;
+
+  final photoTitleEdit = TextEditingController();
+  final photoDescriptionEdit = TextEditingController();
 
   final busPhotoBit = GlobalKey<BusPhotoDetailsBitState>();
   final tramPhotoBit = GlobalKey<TramPhotoDetailsBitState>();
@@ -76,10 +81,20 @@ class _BusPhotoViewerState extends State<BusPhotoViewer> {
 
     setState(() {
       this.photo = photo;
+      photoTitleEdit.text = photo.title;
+      photoDescriptionEdit.text = photo.description ?? "";
     });
   }
 
-  void save() {
+  void save() async {
+    if (photoTitleEdit.text != photo.title ||
+        photoDescriptionEdit.text != (photo.description ?? "")) {
+      await photo.updatePhoto(
+        title: photoTitleEdit.text,
+        description: photoDescriptionEdit.text,
+      );
+    }
+
     if (photo.photoType == PhotoType.bus) {
       busPhotoBit.currentState?.save();
     } else if (photo.photoType == PhotoType.tram) {
@@ -93,6 +108,340 @@ class _BusPhotoViewerState extends State<BusPhotoViewer> {
   Widget build(BuildContext context) {
     final user = context.watch<CurrentUserStore>();
     final height = MediaQuery.sizeOf(context).height;
+
+    final sidePanel = Panel(
+      child: Column(
+        children: [
+          Material(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                context.go("/user/${photo.author!.id}");
+                // setAppPage(UserViewer(user: photo.author));
+              },
+              child: Row(
+                children: [
+                  ProfilePicture(usage: ProfilePictureUsage.nextToName),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      photo.author!.displayName ?? photo.author!.username,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (user.loggedIn && user.user!.id == photo.author!.id)
+                    isEditing
+                        ? Row(
+                            children: [
+                              IconButton(
+                                key: Key("delete"),
+                                onPressed: () async {
+                                  final confirmation = await showConfirmPrompt(
+                                    context,
+                                    const Text("Confirm Deletion"),
+                                    Text(
+                                      "Are you sure you want to delete this photo? The photo and all it's details will be deleted and unrecoverable.",
+                                    ),
+                                  );
+
+                                  if (!confirmation) return;
+
+                                  await photo.delete();
+
+                                  if (lastUri != null) {
+                                    context.go(lastUri!);
+                                  } else {
+                                    context.go("/photos");
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              IconButton(
+                                key: Key("cancel"),
+                                onPressed: () {
+                                  setState(() {
+                                    isEditing = false;
+                                  });
+                                },
+                                icon: const Icon(Icons.cancel),
+                              ),
+                              IconButton(
+                                onPressed: save,
+                                icon: const Icon(Icons.save),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              IconButton(
+                                key: Key("edit"),
+                                onPressed: () {
+                                  setState(() {
+                                    isEditing = true;
+                                  });
+                                },
+                                icon: const Icon(Icons.edit),
+                              ),
+                            ],
+                          ),
+                ],
+              ),
+            ),
+          ),
+
+          const Divider(),
+
+          if (photo.photoType == PhotoType.bus)
+            BusPhotoDetailsBit(
+              key: busPhotoBit,
+              photo: photo,
+              isEditing: isEditing,
+              cancelEdit: () {
+                setState(() {
+                  isEditing = false;
+                });
+                loadPhoto();
+              },
+            ),
+          if (photo.photoType == PhotoType.tram)
+            TramPhotoDetailsBit(
+              key: tramPhotoBit,
+              photo: photo,
+              isEditing: isEditing,
+              cancelEdit: () {
+                setState(() {
+                  isEditing = false;
+                });
+                loadPhoto();
+              },
+            ),
+          if (photo.photoType == PhotoType.modelBus)
+            ModelBusPhotoDetailsBit(
+              key: modelBusPhotoBit,
+              photo: photo,
+              isEditing: isEditing,
+              cancelEdit: () {
+                setState(() {
+                  isEditing = false;
+                });
+                loadPhoto();
+              },
+            ),
+
+          Spacer(),
+          Row(
+            children: [
+              Text(formatIsoDate(photo.createdAt)),
+              Spacer(),
+              IconButton(
+                onPressed: () {
+                  todo(context);
+                },
+                icon: const Icon(Icons.info_outline),
+              ),
+              IconButton(
+                onPressed: () {
+                  todo(context);
+                },
+                icon: const Icon(Icons.share),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    final title = [
+      isEditing
+          ? Expanded(
+              child: TextField(
+                controller: photoTitleEdit,
+                decoration: const InputDecoration(hintText: 'Photo Title...'),
+              ),
+            )
+          : Expanded(
+              child: Text(
+                photo.title.isEmpty ? photo.fileName : photo.title,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+      const Text('©️ Your Mom'),
+    ];
+
+    final description = isEditing
+        ? TextField(
+            maxLines: 3,
+            controller: photoDescriptionEdit,
+            decoration: InputDecoration(hintText: "Photo Description..."),
+          )
+        : photo.description != null
+        ? Text(photo.description!)
+        : SizedBox.shrink();
+
+    if (isMobile(context)) {
+      final mobileHeader = Row(
+        children: [
+          Expanded(child: Row(children: [...title])),
+          IconButton(
+            tooltip: 'Photo details',
+            onPressed: () {
+              setState(() {
+                mobileDrawerShown = !mobileDrawerShown;
+              });
+            },
+            icon: Icon(mobileDrawerShown ? Icons.close : Icons.info_outline),
+          ),
+        ],
+      );
+
+      final mobileRating = Row(
+        children: [
+          PhotoTypeBadge(photoType: photo.photoType),
+          const SizedBox(width: 8),
+          Expanded(
+            child: photoRating == null
+                ? StarRating(
+                    averageRating: 0,
+                    userRating: 0,
+                    removeRating: () {},
+                    setRating: (_) {},
+                  )
+                : StarRating(
+                    averageRating: photoRating!.averageRating,
+                    userRating: photoRating!.rating,
+                    removeRating: () async {
+                      final response = await widget.photo.deleteRating();
+                      setState(() {
+                        photoRating = response;
+                      });
+                    },
+                    setRating: (rating) async {
+                      final response = await widget.photo.setRating(rating);
+                      setState(() {
+                        photoRating = response;
+                      });
+                    },
+                  ),
+          ),
+          const SizedBox(width: 8),
+          FavouriteButton(
+            type: FavouriteType.photo,
+            id: photo.id.toString(),
+            isFavourited: photo.isFavourited,
+            onChanged: () async => load(fetchPhoto: true),
+          ),
+        ],
+      );
+
+      if (mobileDrawerShown) {
+        return Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.info_outline),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Photo details',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Close details',
+                    onPressed: () {
+                      setState(() {
+                        mobileDrawerShown = false;
+                      });
+                    },
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const Divider(),
+              IntrinsicHeight(child: sidePanel),
+            ],
+          ),
+        );
+      }
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            mobileHeader,
+            const SizedBox(height: 12),
+
+            // Photo
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: double.infinity,
+                height: height / 2.5,
+                child: ProgressivePhotoImage(
+                  thumbnailWidth: 200,
+                  imageUrl: (width) => photo.withSize(width),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Photo description
+            if (description is! SizedBox)
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: description,
+                ),
+              ),
+
+            const SizedBox(height: 12),
+
+            // Rating and actions
+            Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                child: mobileRating,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Comments
+            if (widget.photo.commentThread != null) ...[
+              const Text(
+                'Comments',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              CommentThread(
+                threadId: widget.photo.commentThread!,
+                comments: comments,
+                onChange: () => load(),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
 
     return SingleChildScrollView(
       child: Padding(
@@ -115,163 +464,7 @@ class _BusPhotoViewerState extends State<BusPhotoViewer> {
 
                     const SizedBox(width: seperatorPadding),
 
-                    SizedBox(
-                      width: 250,
-                      child: Panel(
-                        child: Column(
-                          children: [
-                            Material(
-                              borderRadius: BorderRadius.circular(16),
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  context.go("/user/${photo.author!.id}");
-                                  // setAppPage(UserViewer(user: photo.author));
-                                },
-                                child: Row(
-                                  children: [
-                                    ProfilePicture(
-                                      usage: ProfilePictureUsage.nextToName,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        photo.author!.displayName ??
-                                            photo.author!.username,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    if (user.loggedIn &&
-                                        user.user!.id == photo.author!.id)
-                                      isEditing
-                                          ? Row(
-                                              children: [
-                                                IconButton(
-                                                  key: Key("delete"),
-                                                  onPressed: () async {
-                                                    final confirmation =
-                                                        await showConfirmPrompt(
-                                                          context,
-                                                          const Text(
-                                                            "Confirm Deletion",
-                                                          ),
-                                                          Text(
-                                                            "Are you sure you want to delete this photo? The photo and all it's details will be deleted and unrecoverable.",
-                                                          ),
-                                                        );
-
-                                                    if (!confirmation) return;
-
-                                                    await photo.delete();
-
-                                                    if (lastUri != null) {
-                                                      context.go(lastUri!);
-                                                    } else {
-                                                      context.go("/photos");
-                                                    }
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.delete,
-                                                    color: Colors.red,
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  key: Key("cancel"),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      isEditing = false;
-                                                    });
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.cancel,
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  onPressed: save,
-                                                  icon: const Icon(Icons.save),
-                                                ),
-                                              ],
-                                            )
-                                          : Row(
-                                              children: [
-                                                IconButton(
-                                                  key: Key("edit"),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      isEditing = true;
-                                                    });
-                                                  },
-                                                  icon: const Icon(Icons.edit),
-                                                ),
-                                              ],
-                                            ),
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            const Divider(),
-
-                            if (photo.photoType == PhotoType.bus)
-                              BusPhotoDetailsBit(
-                                key: busPhotoBit,
-                                photo: photo,
-                                isEditing: isEditing,
-                                cancelEdit: () {
-                                  setState(() {
-                                    isEditing = false;
-                                  });
-                                  loadPhoto();
-                                },
-                              ),
-                            if (photo.photoType == PhotoType.tram)
-                              TramPhotoDetailsBit(
-                                key: tramPhotoBit,
-                                photo: photo,
-                                isEditing: isEditing,
-                                cancelEdit: () {
-                                  setState(() {
-                                    isEditing = false;
-                                  });
-                                  loadPhoto();
-                                },
-                              ),
-                            if (photo.photoType == PhotoType.modelBus)
-                              ModelBusPhotoDetailsBit(
-                                key: modelBusPhotoBit,
-                                photo: photo,
-                                isEditing: isEditing,
-                                cancelEdit: () {
-                                  setState(() {
-                                    isEditing = false;
-                                  });
-                                  loadPhoto();
-                                },
-                              ),
-
-                            Spacer(),
-                            Row(
-                              children: [
-                                Text(formatIsoDate(photo.createdAt)),
-                                Spacer(),
-                                IconButton(
-                                  onPressed: () {
-                                    todo(context);
-                                  },
-                                  icon: const Icon(Icons.info_outline),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    todo(context);
-                                  },
-                                  icon: const Icon(Icons.share),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    SizedBox(width: 250, child: sidePanel),
                   ],
                 ),
               ),
@@ -289,14 +482,10 @@ class _BusPhotoViewerState extends State<BusPhotoViewer> {
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            photo.title.isEmpty ? photo.fileName : photo.title,
-                          ),
-                          Text("©️ Your Mom"),
-                        ],
+                        children: [...title],
                       ),
-                      if (photo.description != null) Text(photo.title),
+
+                      description,
                     ],
                   ),
                 ),

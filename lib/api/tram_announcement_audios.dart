@@ -59,6 +59,12 @@ class ApiTramAnnouncementAudio {
     );
   }
 
+  static List<String> groups = [];
+
+  static Future<void> init() async {
+    groups = await getGroups();
+  }
+
   static Future<List<ApiTramAnnouncementAudio>> search({
     String? fileName,
     String? audioGroup,

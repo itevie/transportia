@@ -1,4 +1,5 @@
 import 'package:transportia/api/api.dart';
+import 'package:transportia/constants.dart';
 
 class ApiBtLivery {
   final int id;
@@ -37,10 +38,27 @@ class ApiBtLivery {
     );
   }
 
-  static Future<List<ApiBtLivery>> search(String query) async {
-    final data = await Api().get(
-      "/liveries?query=${Uri.encodeQueryComponent(query)}",
-    );
+  static Future<List<ApiBtLivery>> search({
+    String? search,
+    String? operatorId,
+    int? pageLength = pageSize,
+    int? offset,
+  }) async {
+    String query = "";
+
+    var parts = [
+      ("search", search),
+      ("operator_id", operatorId),
+      ("page_length", pageLength),
+      ("offset", offset),
+    ].where((x) => x.$2 != null);
+
+    for (var x in parts.indexed) {
+      query += x.$1 == 0 ? "?" : "&";
+      query += "${x.$2.$1}=${Uri.encodeQueryComponent(x.$2.$2.toString())}";
+    }
+
+    final data = await Api().get("/liveries$query");
 
     return (data as List).map((json) => ApiBtLivery.fromJson(json)).toList();
   }

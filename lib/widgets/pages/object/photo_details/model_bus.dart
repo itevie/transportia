@@ -3,8 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:transportia/api/model_bus.dart';
 import 'package:transportia/api/model_bus_ownership.dart';
 import 'package:transportia/api/photo.dart';
-import 'package:transportia/prompts/model_bus.dart';
-import 'package:transportia/prompts/model_bus_ownerships.dart';
+import 'package:transportia/widgets/util/cm_base.dart';
+import 'package:transportia/widgets/prompts/model_bus.dart';
+import 'package:transportia/widgets/prompts/model_bus_ownerships.dart';
 import 'package:transportia/util/util.dart';
 import 'package:transportia/widgets/inputs/search_field.dart';
 import 'package:transportia/widgets/util/detail_chip.dart';
@@ -177,99 +178,63 @@ class ModelBusPhotoDetailsBitState extends State<ModelBusPhotoDetailsBit> {
         ],
 
         if (vehicleObj?.fleet != null) ...[
-          // TDropDownMenu(
-          //   options: {
-          //     'Search Photos': () {
-          //       context.go("/photos?query=${vehicleObj?.fleet}");
-          //     },
-          //     'Search Vehicles': () {
-          //       context.go("/vehicles?query=${vehicleObj?.fleet}");
-          //     },
-          //     if (vehicleObj != null)
-          //       'Vehicle Profile': () {
-          //         context.go("/vehicle/${vehicleObj.id}");
-          //       },
-          //   },
-          //   child:
-          DetailChip(
-            contents: Text(vehicleObj!.fleet),
-            icon: Icons.numbers,
-            onClick: () {},
+          createCm(
+            context,
+            [CmContext.extSearch],
+            vehicleObj,
+            child: DetailChip(
+              contents: Text(vehicleObj!.fleet),
+              icon: Icons.numbers,
+              onClick: () {},
+            ),
           ),
-          // ),
         ],
 
         if (vehicleObj?.reg != null) ...[
           const SizedBox(height: 4),
-
-          // TDropDownMenu(
-          //   options: {
-          //     'Search Photos': () {
-          //       context.go("/photos?query=${vehicleObj?.reg}");
-          //     },
-          //     'Search Vehicles': () {
-          //       context.go("/vehicles?query=${vehicleObj?.reg}");
-          //     },
-          //     if (vehicleObj != null)
-          //       'Vehicle Profile': () {
-          //         context.go("/vehicle/${vehicleObj.id}");
-          //       },
-          //   },
-          //   child:
-          DetailChip(
-            contents: Text(vehicleObj!.reg),
-            icon: Icons.badge,
-            onClick: () {},
+          createCm(
+            context,
+            [CmContext.extSearch],
+            vehicleObj,
+            child: DetailChip(
+              contents: Text(vehicleObj!.reg),
+              icon: Icons.badge,
+              onClick: () {},
+            ),
           ),
-          // ),
         ],
 
         if (vehicleObj?.livery != null) ...[
           const SizedBox(height: 4),
-
-          // TDropDownMenu(
-          //   options: {
-          //     'Search Photos': () {
-          //       context.go("/photos?livery=${vehicleObj?.livery?.id}");
-          //     },
-          //     'Search Vehicles': () {
-          //       context.go("/vehicles?livery=${vehicleObj?.livery?.id}");
-          //     },
-          //   },
-          //   child:
-          isLinux()
-              ? DetailChip(
-                  contents: Text(vehicleObj?.livery?.id.toString() ?? ""),
-                  icon: Icons.palette,
-                  onClick: () {},
-                )
-              : DetailChipNoIcon(
-                  icon: LiveryView(livery: vehicleObj!.livery!),
-                  contents: Text(vehicleObj.livery!.name),
-                ),
-          // ),
+          createCm(
+            context,
+            [CmContext.extSearch],
+            vehicleObj?.livery,
+            child: isLinux()
+                ? DetailChip(
+                    contents: Text(vehicleObj?.livery?.id.toString() ?? ""),
+                    icon: Icons.palette,
+                    onClick: () {},
+                  )
+                : DetailChipNoIcon(
+                    icon: LiveryView(livery: vehicleObj!.livery!),
+                    contents: Text(vehicleObj.livery!.name),
+                  ),
+          ),
         ],
 
         if (vehicleObj?.vehicleType != null) ...[
           const SizedBox(height: 4),
-
-          // TODO: Add this back
-          // TDropDownMenu(
-          //   options: {
-          //     'Search Photos': () {
-          //       context.go("/photos?vt=${vehicleObj!.vehicleType!.id}");
-          //     },
-          //     'Search Vehicles': () {
-          //       context.go("/vehicles?vt=${vehicleObj!.vehicleType!.id}");
-          //     },
-          //   },
-          //   child:
-          DetailChip(
-            contents: Text(vehicleObj!.vehicleType!.name),
-            icon: Icons.bus_alert,
-            onClick: () {},
+          createCm(
+            context,
+            [CmContext.extSearch],
+            vehicleObj?.vehicleType,
+            child: DetailChip(
+              contents: Text(vehicleObj!.vehicleType!.name),
+              icon: Icons.bus_alert,
+              onClick: () {},
+            ),
           ),
-          // ),
         ],
 
         if (vehicleObj?.operator != null) ...[

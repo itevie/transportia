@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_vehicle.dart';
+import 'package:transportia/main.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/edit_object.dart';
 import 'package:transportia/widgets/inputs/search_field_bool.dart';
 import 'package:transportia/widgets/object/vehicle_card.dart';
+import 'package:transportia/widgets/util/toasts.dart';
 
 class VehicleEditPage extends StatefulWidget {
   final ApiBtVehicle vehicle;
@@ -59,6 +62,9 @@ class _VehicleEditPageState extends State<VehicleEditPage> {
           openTop: openTop,
         );
         reload();
+        // ignore: use_build_context_synchronously
+        showSuccessToast(context, "Saved vehicle details!");
+        if (lastUri != null) context.go(lastUri!);
       },
       title: "Edit vehicle ${widget.vehicle.reg} (${widget.vehicle.fleet})",
       options: [

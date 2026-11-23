@@ -32,38 +32,44 @@ class ApiFavourite {
   }
 
   static Future<List<ApiFavourite>> getByType(
+    int userId,
     FavouriteType type, {
     bool fillOut = false,
   }) async {
     final data = await Api().get(
-      "/favourites?target_type=${type.apiValue}&fill_out=$fillOut",
+      "/users/$userId/favourites?target_type=${type.apiValue}&fill_out=$fillOut",
     );
 
     return (data as List).map((json) => ApiFavourite.fromJson(json)).toList();
   }
 
   static Future<List<ApiFavourite>> getByGroup(
+    int userId,
     int group, {
     bool fillOut = false,
   }) async {
-    final data = await Api().get("/favourites/groups/$group?fill_out=$fillOut");
+    final data = await Api().get(
+      "/users/$userId/favourites/groups/$group?fill_out=$fillOut",
+    );
 
     return (data as List).map((json) => ApiFavourite.fromJson(json)).toList();
   }
 
-  Future<void> setGroup(int? group) async {
-    await Api().patch("/favourites/groups/${targetType.apiValue}/$targetId", {
-      'group_id': group,
-    });
+  Future<void> setGroup(int userId, int? group) async {
+    await Api().patch(
+      "/users/$userId/favourites/groups/${targetType.apiValue}/$targetId",
+      {'group_id': group},
+    );
   }
 
   static Future<ApiFavourite?> get(
+    int userId,
     FavouriteType type,
     int targetId, {
     bool fillOut = false,
   }) async {
     final data = await Api().get(
-      "/favourites/${type.apiValue}/$targetId"
+      "/users/$userId/favourites/${type.apiValue}/$targetId"
       "?fill_out=$fillOut",
     );
 
@@ -74,18 +80,26 @@ class ApiFavourite {
     return ApiFavourite.fromJson(data);
   }
 
-  static Future<void> create(FavouriteType type, String targetId) async {
+  static Future<void> create(
+    int userId,
+    FavouriteType type,
+    String targetId,
+  ) async {
     await Api().post(
-      "/favourites"
+      "/users/$userId/favourites"
       "?target_type=${type.apiValue}"
       "&target_id=$targetId",
       {},
     );
   }
 
-  static Future<void> delete(FavouriteType type, String targetId) async {
+  static Future<void> delete(
+    int userId,
+    FavouriteType type,
+    String targetId,
+  ) async {
     await Api().delete(
-      "/favourites"
+      "/users/$userId/favourites"
       "?target_type=${type.apiValue}"
       "&target_id=$targetId",
     );

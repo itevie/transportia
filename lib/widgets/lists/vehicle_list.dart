@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:transportia/api/bt_vehicle.dart';
+import 'package:transportia/theme.dart';
 
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/object/vehicle_card.dart';
@@ -17,12 +18,7 @@ class VehicleList extends StatelessWidget {
           shrinkWrap: true,
           padding: const EdgeInsets.all(8),
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 3 / 4,
-          ),
+          gridDelegate: responsiveGridDelegate(context),
           itemCount: vehicles.length,
           itemBuilder: (context, index) {
             final vehicle = vehicles[index];

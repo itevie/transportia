@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_vehicle.dart';
-import 'package:transportia/cm/cm_base.dart';
+import 'package:transportia/theme.dart';
+import 'package:transportia/widgets/util/cm_base.dart';
 import 'package:transportia/widgets/util/object_labels.dart';
 import 'package:transportia/util/vehicle_icons.dart';
+import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/withdrawn.dart';
 
 class VehicleCard extends StatefulWidget {
@@ -32,7 +34,7 @@ class _VehicleCardState extends State<VehicleCard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              color: Colors.green,
+              color: cardBgColor(context),
               width: double.infinity,
               height: 150,
               child: Stack(
@@ -96,15 +98,13 @@ class _VehicleCardState extends State<VehicleCard> {
                     ],
                   ),
                   if (widget.vehicle.vehicleType != null)
-                    Text(
-                      widget.vehicle.vehicleType!.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  if (widget.vehicle.operator != null)
-                    OperatorLabel(
-                      operator: widget.vehicle.operator!,
-                      dummy: widget.dummy,
-                    ),
+                    VehicleTypeLabel(vt: widget.vehicle.vehicleType!),
+                  widget.vehicle.operator != null
+                      ? OperatorLabel(
+                          operator: widget.vehicle.operator!,
+                          dummy: widget.dummy,
+                        )
+                      : SubText(widget.vehicle.operatorId),
 
                   if (widget.vehicle.livery != null)
                     LiveryLabel(

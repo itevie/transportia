@@ -90,6 +90,7 @@ class ApiTramPhotoDetails {
     int? tdVehicleId,
     bool? tdHasMatchedVehicle,
     int? pageLength = pageSize,
+    PhotoOrderBy? orderBy,
     int? offset,
   }) async {
     String query = "";
@@ -108,6 +109,7 @@ class ApiTramPhotoDetails {
       ("td_vehicle_id", tdVehicleId?.toString()),
       ("td_has_matched_vehicle", tdHasMatchedVehicle?.toString()),
       ("page_length", pageLength?.toString()),
+      ("order_by", orderBy?.toJson()),
       ("offset", offset?.toString()),
     ].where((x) => x.$2 != null);
 

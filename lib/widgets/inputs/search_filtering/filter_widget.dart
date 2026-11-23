@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:transportia/api/meta.dart';
+import 'package:transportia/api/tram_announcement_audios.dart';
 import 'package:transportia/widgets/inputs/obj_inputs.dart';
+import 'package:transportia/widgets/inputs/search_expansion_tile.dart';
 import 'package:transportia/widgets/inputs/search_filtering/filter_type.dart';
 import 'package:transportia/widgets/inputs/search_filtering/main_obj.dart';
 
@@ -147,6 +150,36 @@ class SearchFilterBuilder {
             filters.tramOperator = value;
             onChanged();
           });
+
+        case SearchFilter.tramAnnouncementGroup:
+          return InputExpansionField<String>(
+            label: "Group",
+            onChanged: (v) {
+              filters.tramAnnouncementGroup = filters.tramAnnouncementGroup == v
+                  ? null
+                  : v;
+              onChanged();
+            },
+            items: ApiTramAnnouncementAudio.groups,
+            displayName: (g) => g,
+            selected: filters.tramAnnouncementGroup,
+          );
+
+        case SearchFilter.vehicleUnique:
+          return InputExpansionField<String>(
+            label: "By Unique",
+            onChanged: (v) {
+              filters.vehicleUniqueFilter = filters.vehicleUniqueFilter == v
+                  ? null
+                  : v;
+              onChanged();
+            },
+            items: ApiMeta.instance.getUniqueFilters(
+              AllowedUniqueFilters.vehicles,
+            ),
+            displayName: (g) => g,
+            selected: filters.vehicleUniqueFilter,
+          );
 
         default:
           return Text("Missing: ${filter.toString()}");

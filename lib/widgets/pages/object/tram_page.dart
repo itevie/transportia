@@ -5,7 +5,7 @@ import 'package:transportia/api/model_bus.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tram.dart';
 import 'package:transportia/api/tram_photo_details.dart';
-import 'package:transportia/cm/cm_base.dart';
+import 'package:transportia/widgets/util/cm_base.dart';
 import 'package:transportia/widgets/util/object_labels.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/favourite_icon.dart';

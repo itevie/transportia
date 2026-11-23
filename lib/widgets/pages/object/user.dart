@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:transportia/api/api.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/user.dart';
 import 'package:transportia/stores/current_user_store.dart';
@@ -19,14 +20,10 @@ class UserViewer extends StatefulWidget {
 }
 
 class _UserViewerState extends State<UserViewer> {
+  late ApiUser user;
   List<ApiPhoto> photos = [];
 
-  String? bio =
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque non eros in ligula consequat dignissim. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Curabitur rutrum condimentum lectus sit amet sollicitudin. Morbi condimentum consequat orci. Nam ultrices, eros id pulvinar ullamcorper, mauris nisl sollicitudin leo, a sodales nunc magna ut lacus. Praesent quis lectus ac orci eleifend ornare ultrices nec tortor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed suscipit arcu eget dui luctus congue. Nulla feugiat velit ut ante condimentum blandit ut at purus. Ut pulvinar erat at lacus hendrerit laoreet. Ut convallis sed metus et ultricies. Fusce vel tristique elit. Interdum et malesuada fames ac ante ipsum primis in faucibus. Etiam urna lacus, accumsan eu purus in, pellentesque blandit risus. Integer semper quis lorem id ullamcorper.";
-  String handle = "@john";
-  String displayName = "John";
-
-  late TextEditingController handleController;
+  late TextEditingController usernameController;
   late TextEditingController displayNameController;
   late TextEditingController bioController;
 
@@ -36,13 +33,11 @@ class _UserViewerState extends State<UserViewer> {
   void initState() {
     super.initState();
 
-    bio = widget.user.bio;
-    handle = widget.user.username;
-    displayName = widget.user.displayName ?? widget.user.username;
+    user = widget.user;
 
     bioController = TextEditingController();
     displayNameController = TextEditingController();
-    handleController = TextEditingController();
+    usernameController = TextEditingController();
 
     bioController.addListener(() {
       setState(() {});
@@ -52,7 +47,7 @@ class _UserViewerState extends State<UserViewer> {
       setState(() {});
     });
 
-    handleController.addListener(() {
+    usernameController.addListener(() {
       setState(() {});
     });
 
@@ -69,25 +64,35 @@ class _UserViewerState extends State<UserViewer> {
 
   void startEditing() {
     setState(() {
-      bioController.text = bio ?? "";
-      displayNameController.text = displayName;
-      handleController.text = handle;
+      bioController.text = user.bio ?? "";
+      displayNameController.text = user.displayName ?? "";
+      usernameController.text = user.username;
       isEditinng = true;
     });
   }
 
-  void save() {
+  void save() async {
+    await user.update(
+      username: usernameController.text,
+      displayName: PatchField.set(
+        displayNameController.text.isEmpty ? null : displayNameController.text,
+      ),
+      bio: PatchField.set(
+        bioController.text.isEmpty ? null : bioController.text,
+      ),
+    );
+
+    final newUser = await ApiUser.get(user.id);
+
     setState(() {
+      user = newUser!;
       isEditinng = false;
-      bio = bioController.text;
-      displayName = displayNameController.text;
-      handle = handleController.text;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<CurrentUserStore>();
+    final currentUser = context.watch<CurrentUserStore>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +127,7 @@ class _UserViewerState extends State<UserViewer> {
                                             fontWeight: FontWeight.bold,
                                           ),
                                           decoration: const InputDecoration(
-                                            hintText: "Username",
+                                            hintText: "Display Name",
                                             isDense: true,
                                             border: InputBorder.none,
                                             contentPadding: EdgeInsets.zero,
@@ -141,7 +146,7 @@ class _UserViewerState extends State<UserViewer> {
                                     ],
                                   )
                                 : Text(
-                                    displayName,
+                                    user.displayName ?? "",
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
@@ -154,11 +159,11 @@ class _UserViewerState extends State<UserViewer> {
                                       SizedBox(
                                         width: 400,
                                         child: TextField(
-                                          controller: handleController,
+                                          controller: usernameController,
                                           maxLength: 16,
                                           style: const TextStyle(fontSize: 14),
                                           decoration: const InputDecoration(
-                                            hintText: "@handle",
+                                            hintText: "@username",
                                             isDense: true,
                                             border: InputBorder.none,
                                             contentPadding: EdgeInsets.zero,
@@ -168,7 +173,7 @@ class _UserViewerState extends State<UserViewer> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        "${handleController.text.length}/16",
+                                        "${usernameController.text.length}/16",
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey,
@@ -176,7 +181,7 @@ class _UserViewerState extends State<UserViewer> {
                                       ),
                                     ],
                                   )
-                                : Text(handle),
+                                : Text(user.username),
                           ],
                         ),
                       ],
@@ -184,7 +189,8 @@ class _UserViewerState extends State<UserViewer> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (user.loggedIn && widget.user.id == user.user!.id)
+                        if (currentUser.loggedIn &&
+                            widget.user.id == currentUser.user!.id)
                           isEditinng
                               ? FilledButton.icon(
                                   label: const Text("Save"),
@@ -229,7 +235,7 @@ class _UserViewerState extends State<UserViewer> {
                           border: OutlineInputBorder(),
                         ),
                       )
-                    : Text(bio ?? "", textAlign: TextAlign.start),
+                    : Text(user.bio ?? "", textAlign: TextAlign.start),
               ],
             ),
           ),
@@ -252,12 +258,13 @@ class _UserViewerState extends State<UserViewer> {
                 icon: Icons.directions_bus,
                 child: SingleChildScrollView(child: NotImplementedPage()),
               ),
-              AppTab(
-                id: "favourites",
-                name: "Favourites",
-                icon: Icons.favorite,
-                child: FavouritesPage(isNested: true),
-              ),
+              if (currentUser.user?.id == user.id || user.publicFavourites)
+                AppTab(
+                  id: "favourites",
+                  name: "Favourites",
+                  icon: Icons.favorite,
+                  child: FavouritesPageNew(isNested: true, user: user),
+                ),
             ],
           ),
         ),

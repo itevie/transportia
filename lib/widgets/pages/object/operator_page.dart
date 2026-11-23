@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transportia/api/bt_livery.dart';
 import 'package:transportia/api/bt_vehicle.dart';
+import 'package:transportia/api/bt_vehicle_type.dart';
 import 'package:transportia/api/bus_photo_details.dart';
 import 'package:transportia/api/comment.dart';
 import 'package:transportia/api/photo.dart';
 import 'package:transportia/api/tx_line.dart';
 import 'package:transportia/api/tx_operator.dart';
+import 'package:transportia/widgets/lists/operator_liveries.dart';
+import 'package:transportia/widgets/lists/operator_vehicle_tyes.dart';
 import 'package:transportia/widgets/lists/photo_list.dart';
+import 'package:transportia/widgets/object/small/service.dart';
+import 'package:transportia/widgets/pages/search/bus_photo_search_page.dart';
+import 'package:transportia/widgets/pages/search/vehicle_search.dart';
 import 'package:transportia/widgets/util/sub_text.dart';
 import 'package:transportia/widgets/util/tab_bar.dart';
 import 'package:transportia/widgets/comment_thread.dart';
@@ -25,11 +31,9 @@ class OperatorPage extends StatefulWidget {
 
 class _OperatorPageState extends State<OperatorPage> {
   List<ApiTxLine> lines = [];
-  List<ApiBtVehicle> vehicles = [];
+  List<ApiBtVehicleType> vehicleTypes = [];
   List<ApiBtLivery> liveries = [];
-  Map<String, List<ApiBtVehicle>> vehiclesMapped = {};
   List<ApiComment> comments = [];
-  List<ApiPhoto> photos = [];
 
   @override
   void initState() {
@@ -44,36 +48,10 @@ class _OperatorPageState extends State<OperatorPage> {
       pageLength: 1000,
     );
 
-    final loadedVehicles = await ApiBtVehicle.search(
-      operatorId: widget.operator.nationalCode,
-      pageLength: 1000,
-    );
-
-    final photos = await ApiBusPhotoDetails.fetchAll(
-      bdOperatorId: widget.operator.nationalCode,
-    );
-
-    Map<String, List<ApiBtVehicle>> mapped = {};
-    List<int> liveryIds = [];
-    List<ApiBtLivery> liveries = [];
-
-    for (var v in loadedVehicles) {
-      final t = v.vehicleType?.name ?? "Unknown Type";
-      if (mapped[t] == null) mapped[t] = [];
-      mapped[t]!.add(v);
-
-      if (v.livery != null && !liveryIds.contains(v.livery!.id)) {
-        liveryIds.add(v.livery!.id);
-        liveries.add(v.livery!);
-      }
-    }
+    if (!mounted) return;
 
     setState(() {
       lines = loadedLines;
-      vehicles = loadedVehicles;
-      vehiclesMapped = mapped;
-      this.liveries = liveries;
-      this.photos = photos;
     });
   }
 
@@ -106,101 +84,39 @@ class _OperatorPageState extends State<OperatorPage> {
                 child: ListView(
                   children: [
                     ...lines.map((x) {
-                      return Card(
-                        child: Row(
-                          children: [
-                            ServiceNumber(
-                              lineName: x.name,
-                              operator: x.operatorNationalCode,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                x.inboundDescription ??
-                                    x.outboundDescription ??
-                                    "",
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                      return SmallServiceRow(route: x);
                     }),
                   ],
                 ),
               ),
               AppTab(
                 id: "vehicles",
-                name: "Vehicles (${vehicles.length})",
+                name: "Vehicles",
                 icon: Icons.directions_bus,
-                child: ListView(
-                  children: [
-                    ...vehiclesMapped.entries.map((entry) {
-                      return ExpansionTile(
-                        title: Text("${entry.key} (${entry.value.length})"),
-                        children: [
-                          ...entry.value.map(
-                            (vehicle) => ListTile(
-                              onTap: () {
-                                context.go("/vehicle/${vehicle.id}");
-                                // setAppPage(VehiclePage(vehicle: vehicle));
-                              },
-                              trailing: const Icon(Icons.chevron_right),
-                              title: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text("${vehicle.reg} - ${vehicle.fleet}"),
-                                      if (vehicle.withdrawn) ...[
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          "Withdrawn",
-                                          style: TextStyle(color: Colors.red),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                  if (vehicle.livery != null)
-                                    SubText(vehicle.livery!.name),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
-                  ],
+                child: VehicleSearchPage(
+                  isNested: true,
+                  operator: widget.operator,
                 ),
               ),
-              AppTab(
-                id: "liveries",
-                name: "Liveries (${liveries.length})",
-                icon: Icons.palette,
-                child: ListView(
-                  children: [
-                    ...liveries.map(
-                      (x) => Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 3,
-                        ),
-                        child: ListTile(
-                          title: Text(x.name),
-                          trailing: const Icon(Icons.chevron_right),
-                          leading: LiveryView(
-                            livery: x,
-                            key: Key(x.id.toString()),
-                          ),
-                          onTap: () {
-                            context.go("/vehicles?livery=${x.id}");
-                            // setAppPage(VehicleSearchPage(livery: x));
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
+              if (widget.operator.nationalCode != null) ...[
+                AppTab(
+                  id: "vehicle_types",
+                  name: "Vehicle Types",
+                  icon: Icons.directions_bus,
+                  child: OperatorVehicleTypes(
+                    operatorId: widget.operator.nationalCode!,
+                  ),
                 ),
-              ),
+
+                AppTab(
+                  id: "liveries",
+                  name: "Liveries",
+                  icon: Icons.palette,
+                  child: OperatorLiveries(
+                    operatorId: widget.operator.nationalCode!,
+                  ),
+                ),
+              ],
               if (widget.operator.commentThread != null)
                 AppTab(
                   id: "comments",
@@ -219,9 +135,12 @@ class _OperatorPageState extends State<OperatorPage> {
                 ),
               AppTab(
                 id: "photos",
-                name: "Photos (${photos.length})",
+                name: "Photos",
                 icon: Icons.camera,
-                child: SingleChildScrollView(child: PhotoList(photos: photos)),
+                child: BusPhotoSearchPage(
+                  isNested: true,
+                  operator: widget.operator,
+                ),
               ),
             ],
           ),

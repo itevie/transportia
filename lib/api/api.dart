@@ -3,6 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:transportia/main.dart';
 import 'package:transportia/util/prefs.dart';
+import 'package:transportia/widgets/util/error_widget.dart';
+import 'package:transportia/widgets/util/toasts.dart';
 
 class Api {
   static final Api _instance = Api._internal();
@@ -74,9 +76,43 @@ class Api {
 
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      showError(response.body);
-      throw Exception(
-        "HTTP ${response.request?.url.toString()} ${response.statusCode}: ${response.body}",
+      final exception = ApiHttpException(
+        statusCode: response.statusCode,
+        statusMessage: response.reasonPhrase ?? 'HTTP Error',
+        message: ApiResponseHandler.extractErrorMessage(response.body),
+      );
+
+      showError(exception);
+
+      throw exception;
+    }
+
+    if (response.body.isEmpty) {
+      return null;
+    }
+
+    return jsonDecode(response.body);
+  }
+}
+
+class PatchField<T> {
+  final bool isSet;
+  final T? value;
+
+  const PatchField.unset() : isSet = false, value = null;
+
+  const PatchField.set(this.value) : isSet = true;
+
+  Map<String, dynamic> toJson() => {if (isSet) 'value': value};
+}
+
+class ApiResponseHandler {
+  static dynamic handle(http.Response response) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw ApiHttpException(
+        statusCode: response.statusCode,
+        statusMessage: response.reasonPhrase ?? 'HTTP Error',
+        message: extractErrorMessage(response.body),
       );
     }
 
@@ -85,5 +121,26 @@ class Api {
     }
 
     return jsonDecode(response.body);
+  }
+
+  static String extractErrorMessage(String body) {
+    if (body.isEmpty) {
+      return 'The server returned an empty error response.';
+    }
+
+    try {
+      final decoded = jsonDecode(body);
+
+      if (decoded is Map<String, dynamic>) {
+        return decoded['message'] ??
+            decoded['error'] ??
+            decoded['detail'] ??
+            body;
+      }
+
+      return body;
+    } catch (_) {
+      return body;
+    }
   }
 }

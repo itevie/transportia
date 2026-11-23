@@ -14,6 +14,8 @@ class ApiUser {
 
   final String passwordHash;
 
+  final bool publicFavourites;
+
   final bool trustedUser;
 
   ApiUser({
@@ -24,6 +26,7 @@ class ApiUser {
     this.bio,
     required this.passwordHash,
     required this.trustedUser,
+    required this.publicFavourites,
   });
 
   factory ApiUser.fromJson(Map<String, dynamic> json) {
@@ -35,6 +38,7 @@ class ApiUser {
       bio: json["bio"],
       passwordHash: json["password_hash"],
       trustedUser: json["trusted_user"],
+      publicFavourites: json["public_favourites"],
     );
   }
 
@@ -94,5 +98,17 @@ class ApiUser {
     }
 
     return ApiUser.fromJson(data);
+  }
+
+  Future<void> update({
+    String? username,
+    PatchField<String> displayName = const PatchField.unset(),
+    PatchField<String> bio = const PatchField.unset(),
+  }) async {
+    await Api().patch("/users/$id", {
+      'username': ?username,
+      if (displayName.isSet) 'display_name': displayName.value,
+      if (bio.isSet) 'bio': bio.value,
+    });
   }
 }

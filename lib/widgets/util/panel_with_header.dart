@@ -17,6 +17,7 @@ class PanelWithHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Panel(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -33,8 +34,8 @@ class PanelWithHeader extends StatelessWidget {
               ],
             ),
           ),
-          Divider(),
-          Expanded(child: child),
+          const Divider(),
+          child,
         ],
       ),
     );

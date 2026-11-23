@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:transportia/api/photo.dart';
+import 'package:transportia/theme.dart';
 import 'package:transportia/widgets/object/photo_image_card.dart';
 
 class PhotoList extends StatelessWidget {
@@ -15,8 +16,8 @@ class PhotoList extends StatelessWidget {
       shrinkWrap: true,
       padding: const EdgeInsets.all(8),
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: responsiveGridColumns(context),
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
         childAspectRatio: 4 / 3,

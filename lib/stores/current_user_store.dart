@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:transportia/api/user.dart';
+import 'package:transportia/util/prefs.dart';
 
 class CurrentUserStore extends ChangeNotifier {
   ApiUser? _user;
@@ -13,6 +14,12 @@ class CurrentUserStore extends ChangeNotifier {
 
   void clear() {
     _user = null;
+    notifyListeners();
+  }
+
+  Future<void> logout() async {
+    _user = null;
+    await Preferences().remove("token");
     notifyListeners();
   }
 

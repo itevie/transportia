@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:transportia/api/tram_type.dart';
 import 'package:transportia/main.dart';
 import 'package:transportia/widgets/inputs/search_field_text.dart';
-import 'package:transportia/widgets/object/tram_type.dart';
+import 'package:transportia/widgets/object/small/tram_type.dart';
 import 'package:transportia/widgets/util/edit_object.dart';
+import 'package:transportia/widgets/util/toasts.dart';
 
 class TramTypeEditPage extends StatefulWidget {
   final ApiTramType? tram;
@@ -46,8 +47,14 @@ class _TramTypeEditPageState extends State<TramTypeEditPage> {
 
     if (tram == null) {
       await ApiTramType.create(name: tramType.text);
+
+      // ignore: use_build_context_synchronously
+      showSuccessToast(context, "Tram type ${tramType.text} created!");
     } else {
       await tram!.updateType(name: tramType.text);
+
+      // ignore: use_build_context_synchronously
+      showSuccessToast(context, "Tram type updated!");
     }
 
     if (lastUri != null) context.go(lastUri!);

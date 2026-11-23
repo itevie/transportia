@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:transportia/api/tram_operator.dart';
 import 'package:transportia/main.dart';
 import 'package:transportia/widgets/inputs/search_field_text.dart';
-import 'package:transportia/widgets/object/tram_operator.dart';
+import 'package:transportia/widgets/object/small/tram_operator.dart';
 import 'package:transportia/widgets/util/edit_object.dart';
+import 'package:transportia/widgets/util/toasts.dart';
 
 class TramOperatorEditPage extends StatefulWidget {
   final ApiTramOperator? operator;
@@ -46,8 +47,14 @@ class _TramOperatorEditPageState extends State<TramOperatorEditPage> {
 
     if (tram == null) {
       await ApiTramOperator.create(name: operatorName.text);
+
+      // ignore: use_build_context_synchronously
+      showSuccessToast(context, "Tram operator ${operatorName.text} created!");
     } else {
       await tram!.updateOperator(name: operatorName.text);
+
+      // ignore: use_build_context_synchronously
+      showSuccessToast(context, "Tram operator saved!");
     }
 
     if (lastUri != null) context.go(lastUri!);
